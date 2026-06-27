@@ -11,16 +11,22 @@
 		}
 	],
 	"require": {
-		"php": ">= 5.4.0",
-		"nette/nette": "~2.2.0",
-		"dibi/dibi": "^3.0"
+		"php": ">= 7.4.0",
+		"nette/utils": "^2.4",
+		"nette/caching": "^2.5",
+		"dibi/dibi": "v4.2.8"
 	},
 	"require-dev": {
-		"nette/tester": "~1.4"
+		"nette/tester": "^2.5"
 	},
 	"autoload": {
-		"psr-0": {
-			"Acidclick\\AcidORM\\": "src/"
+		"psr-4": {
+			"AcidORM\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Model\\": "tests/Model/"
 		}
 	}
 }
