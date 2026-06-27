@@ -256,6 +256,150 @@ public ?array $comments = null;
 public ?array $tags = null;
 ```
 
+## HistoryComparer
+
+`AcidORM\Utils\HistoryComparer` is a utility class for comparing two versions of an entity and producing a human-readable change summary. It is used automatically by `BaseFacade` when the facade implements `IHistoryProxy` or the entity implements `IHistoryObject`, but it can also be called directly.
+
+Only properties annotated with `@label` are compared — everything else is ignored.
+
+### hasChanges
+
+Returns `true` if at least one `@label`-annotated property differs between the two objects.
+
+```php
+$old = $persistor->getById(5);
+
+$new = clone $old;
+$new->name = 'Updated name';
+
+if (HistoryComparer::hasChanges($old, $new)) {
+    // something changed
+}
+```
+
+### getChanges
+
+Returns an HTML string listing every changed property with its label and new value.
+
+```php
+$html = HistoryComparer::getChanges($old, $new);
+// Example output:
+// <strong>Name</strong>: Updated name<br /><strong>Status</strong>: active
+```
+
+### getValue
+
+`getValue($value, ReflectionProperty $property): string`
+
+Converts a single property value to a human-readable string. `hasChanges` and `getChanges` call it internally for every compared property, but you can also use it standalone.
+
+The conversion rules, in order of priority:
+
+| Value type | Result |
+|---|---|
+| `DateTimeInterface` | `Y-m-d H:i:s` formatted string |
+| Object with `__toString()` | Result of `(string) $value` |
+| `bool` | `'Ano'` (true) / `'Ne'` (false) |
+| Property has `@enum` annotation | `{EnumClass}::getName($value)` |
+| Property has `@formatter` annotation | `{FormatterClass}::format($value, $property[, $annotation])` |
+| Anything else | `(string) $value` |
+
+**DateTime:**
+
+```php
+$property = (new ReflectionClass($article))->getProperty('publishedAt');
+
+$value = new \DateTime('2024-06-01 12:00:00');
+echo HistoryComparer::getValue($value, $property);
+// → "2024-06-01 12:00:00"
+```
+
+**Bool:**
+
+```php
+echo HistoryComparer::getValue(true,  $property); // → "Ano"
+echo HistoryComparer::getValue(false, $property); // → "Ne"
+```
+
+**Enum — simple string annotation:**
+
+```php
+// Entity property:
+// /** @label Status @enum StatusEnum */
+// public ?int $status = null;
+
+// Enum class must implement a static getName() method:
+class StatusEnum
+{
+    const ACTIVE   = 1;
+    const INACTIVE = 0;
+
+    public static function getName(int $value): string
+    {
+        return match ($value) {
+            self::ACTIVE   => 'Active',
+            self::INACTIVE => 'Inactive',
+            default        => (string) $value,
+        };
+    }
+}
+
+echo HistoryComparer::getValue(1, $property);
+// → "Active"
+```
+
+**Formatter — simple string annotation:**
+
+The class must expose a static `format($value, ReflectionProperty $property): string` method.
+
+```php
+// /** @label Price @formatter PriceFormatter */
+// public ?float $price = null;
+
+class PriceFormatter
+{
+    public static function format($value, \ReflectionProperty $property): string
+    {
+        return number_format((float) $value, 2, ',', ' ') . ' Kč';
+    }
+}
+
+echo HistoryComparer::getValue(1990.5, $property);
+// → "1 990,50 Kč"
+```
+
+**Formatter — with annotation parameters:**
+
+When the annotation has named parameters, the full `AnnotationValue` is passed as the third argument.
+
+```php
+// /** @label Weight @formatter(class=UnitFormatter, unit=kg, decimals=3) */
+// public ?float $weight = null;
+
+class UnitFormatter
+{
+    public static function format($value, \ReflectionProperty $property, $annotation): string
+    {
+        $decimals = (int) ($annotation['decimals'] ?? 2);
+        $unit     = $annotation['unit'] ?? '';
+        return number_format((float) $value, $decimals, '.', '') . ' ' . $unit;
+    }
+}
+
+echo HistoryComparer::getValue(12.5, $property);
+// → "12.500 kg"
+```
+
+### Annotations Reference (HistoryComparer)
+
+| Annotation | Target | Description |
+|---|---|---|
+| `@label <text>` | property | Marks the property for comparison; used as the field label in change output |
+| `@enum <ClassName>` | property | Class with `static getName($value): string` for human-readable enum values |
+| `@formatter <ClassName>` | property | Class with `static format($value, $property): string` |
+| `@formatter(class=X, ...)` | property | Formatter with extra parameters passed as `AnnotationValue` |
+| `@historyDontMap` | property | Excludes the property from history even when it has `@label` |
+
 ## Annotations Reference
 
 | Annotation | Target | Description |
