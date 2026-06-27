@@ -1,6 +1,6 @@
 <?php
 
-namespace acidorm\Utils;
+namespace AcidORM\Utils;
 
 class AnnotationValue implements \ArrayAccess
 {

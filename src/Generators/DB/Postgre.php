@@ -1,9 +1,9 @@
 <?php
 
-namespace acidorm\Generators\DB;
+namespace AcidORM\Generators\DB;
 
 use Nette,
-	acidorm\Generators;
+	AcidORM\Generators;
 
 /**
  * @property \Dibi\Connection $db

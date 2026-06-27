@@ -8,7 +8,7 @@ use Tester\TestCase;
 use Model\Data\User;
 use Model\Mappers\UserMapper;
 use Model\Persistors\UserPersistor;
-use acidorm\Managers\MapperManager;
+use AcidORM\Managers\MapperManager;
 
 final class BasePersistorTest extends TestCase
 {

@@ -1,16 +1,16 @@
 <?php
 
-namespace acidorm;
+namespace AcidORM;
 
 use Nette;
-use acidorm\Utils\AnnotationParser;
+use AcidORM\Utils\AnnotationParser;
 
 /**
  * @property \Dibi\Connection $db
  * @property BaseObject $object
  * @property BaseMapper $mapper
  * @property string $table
- * @property acidorm\Managers\MapperManager $mapperManager
+ *  AcidORM\Managers\MapperManager $mapperManager
  * @property Nette\Caching\Cache $cache
  */
 class BasePersistor

@@ -10,9 +10,9 @@ use Model\Data\Article;
 use Model\Data\Tag;
 use Model\Mappers\UserMapper;
 use Model\Mappers\ArticleMapper;
-use acidorm\DB\Relationships\OneToMany;
-use acidorm\DB\Relationships\ManyToMany;
-use acidorm\DB\Relationships\OneToOne;
+use AcidORM\DB\Relationships\OneToMany;
+use AcidORM\DB\Relationships\ManyToMany;
+use AcidORM\DB\Relationships\OneToOne;
 
 final class BaseMapperTest extends TestCase
 {

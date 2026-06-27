@@ -5,7 +5,7 @@ require __DIR__ . '/bootstrap.php';
 
 use Tester\Assert;
 use Tester\TestCase;
-use acidorm\Utils\AnnotationValue;
+use AcidORM\Utils\AnnotationValue;
 
 final class AnnotationValueTest extends TestCase
 {

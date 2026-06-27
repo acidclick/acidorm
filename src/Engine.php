@@ -1,9 +1,9 @@
 <?php
 
-namespace acidorm;
+namespace AcidORM;
 
 use Nette,
-	acidorm\Managers;
+	AcidORM\Managers;
 
 /**
  * @property Managers\PersistorManager $persistorManager

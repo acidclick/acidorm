@@ -1,9 +1,9 @@
 <?php
 
-namespace acidorm;
+namespace AcidORM;
 
-use acidorm\DB;
-use acidorm\Utils\AnnotationParser;
+use AcidORM\DB;
+use AcidORM\Utils\AnnotationParser;
 /**
  * @property BaseObject $object
  * @property string $namespace

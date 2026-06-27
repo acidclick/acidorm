@@ -5,7 +5,7 @@ require __DIR__ . '/../bootstrap.php';
 
 use Tester\Assert;
 use Tester\TestCase;
-use acidorm\DB\Result;
+use AcidORM\DB\Result;
 
 final class ResultTest extends TestCase
 {

@@ -21,7 +21,7 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"acidorm\\": "src/"
+			"AcidORM\\": "src/"
 		}
 	},
 	"autoload-dev": {

@@ -1,9 +1,9 @@
 <?php
 
-namespace acidorm\Generators;
+namespace AcidORM\Generators;
 
 use Nette;
-use acidorm\Generators\DB\BaseDatabase;
+use AcidORM\Generators\DB\BaseDatabase;
 
 /**
  * @property \Dibi\Connection $db
@@ -52,7 +52,7 @@ class DatabaseFirst implements IDatabaseFirst
 
 	public function createAdapter()
 	{
-		$class = 'acidorm\\Generators\\DB\\' . Nette\Utils\Strings::firstUpper($this->databaseDriver);
+		$class = 'AcidORM\\Generators\\DB\\' . Nette\Utils\Strings::firstUpper($this->databaseDriver);
 		$this->adapter = new $class();
 		$this->adapter->db = $this->db;
 		$this->adapter->appDir = $this->appDir;

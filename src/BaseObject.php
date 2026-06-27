@@ -1,8 +1,8 @@
 <?php
 
-namespace acidorm;
+namespace AcidORM;
 
-use acidorm\Utils\AnnotationParser;
+use AcidORM\Utils\AnnotationParser;
 
 class BaseObject implements \JsonSerializable
 {

@@ -5,11 +5,11 @@ require __DIR__ . '/bootstrap.php';
 
 use Tester\Assert;
 use Tester\TestCase;
-use acidorm\Engine;
-use acidorm\Managers\FacadeManager;
-use acidorm\Managers\GridManager;
-use acidorm\Managers\MapperManager;
-use acidorm\Managers\PersistorManager;
+use AcidORM\Engine;
+use AcidORM\Managers\FacadeManager;
+use AcidORM\Managers\GridManager;
+use AcidORM\Managers\MapperManager;
+use AcidORM\Managers\PersistorManager;
 use Nette\Caching\Cache;
 use Nette\Caching\Storages\MemoryStorage;
 

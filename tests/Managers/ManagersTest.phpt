@@ -7,8 +7,8 @@ use Tester\Assert;
 use Tester\TestCase;
 use Model\Mappers\UserMapper;
 use Model\Persistors\UserPersistor;
-use acidorm\Managers\MapperManager;
-use acidorm\Managers\PersistorManager;
+use AcidORM\Managers\MapperManager;
+use AcidORM\Managers\PersistorManager;
 use Nette\Caching\Cache;
 use Nette\Caching\Storages\MemoryStorage;
 

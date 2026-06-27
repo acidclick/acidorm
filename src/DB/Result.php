@@ -1,6 +1,6 @@
 <?php
 
-namespace acidorm\DB;
+namespace AcidORM\DB;
 
 use Nette;
 

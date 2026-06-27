@@ -5,9 +5,9 @@ require __DIR__ . '/../bootstrap.php';
 
 use Tester\Assert;
 use Tester\TestCase;
-use acidorm\DB\Relationships\OneToOne;
-use acidorm\DB\Relationships\OneToMany;
-use acidorm\DB\Relationships\ManyToMany;
+use AcidORM\DB\Relationships\OneToOne;
+use AcidORM\DB\Relationships\OneToMany;
+use AcidORM\DB\Relationships\ManyToMany;
 
 final class RelationshipsTest extends TestCase
 {

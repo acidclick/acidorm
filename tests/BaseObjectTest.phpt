@@ -7,7 +7,7 @@ use Tester\Assert;
 use Tester\TestCase;
 use Model\Data\User;
 
-class ObjectWithLabel extends \acidorm\BaseObject
+class ObjectWithLabel extends \AcidORM\BaseObject
 {
 	public ?string $label = 'Vlastní popis';
 	public ?int $id = null;

@@ -3,6 +3,6 @@ declare(strict_types=1);
 
 namespace Model\Persistors;
 
-use acidorm\BasePersistor;
+use AcidORM\BasePersistor;
 
 class UserPersistor extends BasePersistor {}

@@ -1,9 +1,9 @@
 <?php
 
-namespace acidorm\Generators\DB;
+namespace AcidORM\Generators\DB;
 
 use Nette,
-	acidorm\Generators;
+	AcidORM\Generators;
 
 class BaseDatabase
 {
@@ -39,7 +39,7 @@ class BaseDatabase
 			}
 		}
 
-		$data  = "<?php\n\nnamespace Model\Data;\n\nuse Nette,\n\tacidorm,\n\tModel;\n\n";
+		$data  = "<?php\n\nnamespace Model\Data;\n\nuse Nette,\n\tAcidORM,\n\tModel;\n\n";
 
 		if(sizeof($annotations) > 0){
 			$data .= "/**\n";
@@ -50,7 +50,7 @@ class BaseDatabase
 		}
 
 
-		$data .= sprintf("class %s extends acidorm\BaseObject\n{\n\n", $name);
+		$data .= sprintf("class %s extends AcidORM\BaseObject\n{\n\n", $name);
 
 		$data .= "\t// acidorm generated properties\n\n";
 
@@ -110,7 +110,7 @@ class BaseDatabase
 	{
 		$filepath = sprintf('Persistors/%sPersistor.php', Nette\Utils\Strings::firstUpper($name));
 		if(!file_exists($this->appDir . '/model/' . $filepath)){
-			$data  = sprintf("<?php\n\nnamespace Model\Persistors;\n\nuse Nette,\n\tacidorm;\n\nclass %sPersistor extends acidorm\BasePersistor\n{\n\n}", $name);
+			$data  = sprintf("<?php\n\nnamespace Model\Persistors;\n\nuse Nette,\n\tAcidORM;\n\nclass %sPersistor extends AcidORM\BasePersistor\n{\n\n}", $name);
 			$this->saveFile($data, $filepath);
 		}
 	}
@@ -119,7 +119,7 @@ class BaseDatabase
 	{
 		$filepath = sprintf('Mappers/%sMapper.php', Nette\Utils\Strings::firstUpper($name));
 		if(!file_exists($this->appDir . '/model/' . $filepath)){
-			$data  = sprintf("<?php\n\nnamespace Model\Mappers;\n\nuse Nette,\n\tacidorm;\n\nclass %sMapper extends acidorm\BaseMapper\n{\n\n}", $name);
+			$data  = sprintf("<?php\n\nnamespace Model\Mappers;\n\nuse Nette,\n\tAcidORM;\n\nclass %sMapper extends AcidORM\BaseMapper\n{\n\n}", $name);
 			$this->saveFile($data, $filepath);
 		}
 	}
@@ -128,7 +128,7 @@ class BaseDatabase
 	{
 		$filepath = sprintf('Facades/%sFacade.php', Nette\Utils\Strings::firstUpper($name));
 		if(!file_exists($this->appDir . '/model/' . $filepath)){
-			$data  = sprintf("<?php\n\nnamespace Model\Facades;\n\nuse Nette,\n\tacidorm;\n\nclass %sFacade extends acidorm\BaseFacade\n{\n\n}", $name);
+			$data  = sprintf("<?php\n\nnamespace Model\Facades;\n\nuse Nette,\n\tAcidORM;\n\nclass %sFacade extends AcidORM\BaseFacade\n{\n\n}", $name);
 			$this->saveFile($data, $filepath);			
 		}
 	}	

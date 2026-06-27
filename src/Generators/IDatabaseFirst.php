@@ -1,6 +1,6 @@
 <?php
 
-namespace acidorm\Generators;
+namespace AcidORM\Generators;
 
 interface IDatabaseFirst
 {

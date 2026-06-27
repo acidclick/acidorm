@@ -5,8 +5,8 @@ require __DIR__ . '/bootstrap.php';
 
 use Tester\Assert;
 use Tester\TestCase;
-use acidorm\Utils\AnnotationParser;
-use acidorm\Utils\AnnotationValue;
+use AcidORM\Utils\AnnotationParser;
+use AcidORM\Utils\AnnotationValue;
 
 /**
  * @name TestClass

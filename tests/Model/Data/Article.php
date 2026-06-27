@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Model\Data;
 
-use acidorm\BaseObject;
+use AcidORM\BaseObject;
 
 class Article extends BaseObject
 {
