@@ -34,7 +34,7 @@ class PersistorManager extends BaseManager
 	}
 
 	public function getMapperManager(){
-		return $this->mapperManage;
+		return $this->mapperManager;
 	}
 
 	public function setDb($db){

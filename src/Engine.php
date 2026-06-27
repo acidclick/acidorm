@@ -195,7 +195,7 @@ class Engine
 	public function createDirStructure()
 	{
 		$dataDir = $this->parameters['appDir'] . '/model/Data';
-		if(!is_dir($dataDir)) mkdir($dataDir, 0755);
+		if(!is_dir($dataDir)) mkdir($dataDir, 0755, true);
 
 		$enumsDir = $this->parameters['appDir'] . '/model/Enums';
 		if(!is_dir($enumsDir)) mkdir($enumsDir, 0755);
