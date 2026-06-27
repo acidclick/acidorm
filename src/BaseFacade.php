@@ -41,6 +41,7 @@ class BaseFacade
 	public function mapDependencies(?BaseObject &$baseObject = null, $dependencies = null): void
 	{
 		if ($baseObject === null) return;
+		if(!is_array($dependencies)) $dependencies = [];
 
 		foreach ($this->mapperManager->getMapper($this->name)->getOneToManyRelationships() as $propertyName => $oneToMany) {
 			if ($dependencies === null || in_array($propertyName, $dependencies)) {
@@ -206,7 +207,6 @@ class BaseFacade
 	{
 		$this->isCallable($class);
 
-		if ((int)$userId === 0 && preg_match('/^[\d]+$/', $userId)) $userId = \Model\Utils\Helpers::$userId;
 		$new = $object->id === null;
 		if (!$new && ($this instanceof IHistoryProxy || $object instanceof IHistoryObject)) {
 			$oldObject = $this->simpleGetBy($class, 'Id', [$object->id]);
