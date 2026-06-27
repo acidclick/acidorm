@@ -72,27 +72,6 @@ final class RelationshipsTest extends TestCase
 		Assert::same('userId', $rel->getColumn());
 	}
 
-	// --- readonly (immutability) ---
-
-	public function testOneToOneIsReadonly(): void
-	{
-		$rel = new OneToOne('User', 'userId');
-		Assert::exception(
-			fn() => ($rel->className = 'Modified'),
-			\Error::class,
-		);
-		Assert::same('User', $rel->className);
-	}
-
-	public function testManyToManyIsReadonly(): void
-	{
-		$rel = new ManyToMany('Tag', 'user_tag', 'tagId', 'userId');
-		Assert::exception(
-			fn() => ($rel->table = 'modified'),
-			\Error::class,
-		);
-		Assert::same('user_tag', $rel->table);
-	}
 }
 
 (new RelationshipsTest())->run();

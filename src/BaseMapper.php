@@ -11,6 +11,7 @@ class BaseMapper
 
 	private string $namespace = 'Model\\Data\\';
 	private ?BaseObject $object = null;
+	private ?\ReflectionClass $objectReflection = null;
 	private ?string $table = null;
 	private ?array $oneToOneRelations = null;
 	private ?array $manyToManyRelations = null;
@@ -22,6 +23,7 @@ class BaseMapper
 		if (preg_match('/([a-zA-Z0-9]+)Mapper$/', $reflection->getName(), $regs)) {
 			$className = $this->namespace . $regs[1];
 			$this->object = new $className();
+			$this->objectReflection = new \ReflectionClass($this->object);
 			$this->table = $regs[1];
 		}
 	}
@@ -30,7 +32,7 @@ class BaseMapper
 	{
 		if (method_exists($object, 'tierDown')) $object->tierDown();
 		$array = [];
-		foreach (new \ReflectionClass($this->object)->getProperties() as $property) {
+		foreach ($this->objectReflection->getProperties() as $property) {
 			if (!$this->isRelationship($property) && !AttributeReader::has($property, Attributes\DontMap::class)) {
 				if ($object->{$property->name} !== null || preg_match('/Date/', $property->name) || preg_match('/Time$/', $property->name) || preg_match('/Id/', $property->name)) {
 					$array[$property->name] = $object->{$property->name};
@@ -62,7 +64,7 @@ class BaseMapper
 	public function getColumns(string $alias): array
 	{
 		$columns = [];
-		foreach (new \ReflectionClass($this->object)->getProperties() as $property) {
+		foreach ($this->objectReflection->getProperties() as $property) {
 			if (!$this->isRelationship($property) && !AttributeReader::has($property, Attributes\DontMap::class)) {
 				$columns[$alias . '.' . $property->name] = $alias . '_' . $property->name;
 			}
@@ -75,7 +77,7 @@ class BaseMapper
 	{
 		if ($this->oneToOneRelations === null) {
 			$this->oneToOneRelations = [];
-			foreach (new \ReflectionClass($this->object)->getProperties() as $property) {
+			foreach ($this->objectReflection->getProperties() as $property) {
 				$attr = AttributeReader::get($property, Attributes\OneToOne::class);
 				if ($attr !== null) {
 					$this->oneToOneRelations[$property->name] = $attr;
@@ -90,7 +92,7 @@ class BaseMapper
 	{
 		if ($this->oneToManyRelations === null) {
 			$this->oneToManyRelations = [];
-			foreach (new \ReflectionClass($this->object)->getProperties() as $property) {
+			foreach ($this->objectReflection->getProperties() as $property) {
 				$attr = AttributeReader::get($property, Attributes\OneToMany::class);
 				if ($attr !== null) {
 					$this->oneToManyRelations[$property->name] = $attr;
@@ -105,7 +107,7 @@ class BaseMapper
 	{
 		if ($this->manyToManyRelations === null) {
 			$this->manyToManyRelations = [];
-			foreach (new \ReflectionClass($this->object)->getProperties() as $property) {
+			foreach ($this->objectReflection->getProperties() as $property) {
 				$attr = AttributeReader::get($property, Attributes\ManyToMany::class);
 				if ($attr !== null) {
 					$this->manyToManyRelations[$property->name] = $attr;

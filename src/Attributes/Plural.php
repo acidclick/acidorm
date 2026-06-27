@@ -3,7 +3,7 @@
 namespace AcidORM\Attributes;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
-readonly class Plural
+class Plural
 {
 	public function __construct(public string $value) {}
 }

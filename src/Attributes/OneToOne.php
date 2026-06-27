@@ -3,7 +3,7 @@
 namespace AcidORM\Attributes;
 
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
-readonly class OneToOne
+class OneToOne
 {
 	public function __construct(
 		public string $className,

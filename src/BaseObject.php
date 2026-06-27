@@ -12,7 +12,7 @@ class BaseObject implements \JsonSerializable
 	public function jsonSerialize(): mixed
 	{
 		$data = [];
-		foreach (new \ReflectionClass($this)->getProperties() as $property) {
+		foreach ((new \ReflectionClass($this))->getProperties() as $property) {
 			$data[$property->name] = $this->{$property->name};
 		}
 		return $data;
@@ -25,7 +25,7 @@ class BaseObject implements \JsonSerializable
 		}
 
 		if ($name !== null && property_exists($this, $name)) {
-			$attr = AttributeReader::get(new \ReflectionClass($this)->getProperty($name), Label::class);
+			$attr = AttributeReader::get((new \ReflectionClass($this))->getProperty($name), Label::class);
 			if ($attr !== null) {
 				return $attr->value;
 			}

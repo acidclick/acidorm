@@ -2,5 +2,5 @@
 
 namespace AcidORM;
 
-#[\Deprecated('Use AcidORM\Engine instead.')]
+/** @deprecated Use AcidORM\Engine instead. */
 class AcidORM extends Engine {}

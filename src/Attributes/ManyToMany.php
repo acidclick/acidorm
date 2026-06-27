@@ -3,7 +3,7 @@
 namespace AcidORM\Attributes;
 
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
-readonly class ManyToMany
+class ManyToMany
 {
 	public function __construct(
 		public string $className,
