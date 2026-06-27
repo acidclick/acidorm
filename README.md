@@ -177,6 +177,60 @@ $facade->deleteUser($user->id);
 
 Facades automatically resolve one-to-many and many-to-many relationships via `mapDependencies()`.
 
+### Pagination and Sorting
+
+Dynamic `get*` methods accept additional trailing arguments for limit, offset, sort column, sort direction (`0` = ASC, `1` = DESC), and an optional total-count callback.
+
+**Fetch all with pagination:**
+
+```php
+// Signature: getUsers($limit, $offset, $orderBy, $direction, $countCallback)
+
+// First page, 10 records, sorted by name ASC
+$users = $facade->getUsers(10, 0, 'name', 0);
+
+// Second page
+$users = $facade->getUsers(10, 10, 'name', 0);
+
+// Sorted by registration date DESC
+$users = $facade->getUsers(10, 0, 'createdAt', 1);
+
+// With total count (for building a paginator)
+$total = 0;
+$users = $facade->getUsers(10, 0, 'name', 0, function (int $count) use (&$total) {
+    $total = $count;
+});
+// $total now holds the total number of matching rows
+```
+
+**Filter + pagination:**
+
+When filtering, the filter value(s) come first, followed by the same pagination arguments.
+
+```php
+// Signature: getUsersByStatus($status, $limit, $offset, $orderBy, $direction, $countCallback)
+
+$total = 0;
+$users = $facade->getUsersByStatus(
+    'active',           // filter value
+    10,                 // limit
+    0,                  // offset
+    'name',             // order by column
+    0,                  // direction: 0 = ASC, 1 = DESC
+    function (int $count) use (&$total) {
+        $total = $count;
+    }
+);
+```
+
+**Compound filter + pagination:**
+
+```php
+// Signature: getUsersByRoleAndStatus($role, $status, $limit, $offset, $orderBy, $direction, $countCallback)
+
+$users = $facade->getUsersByRoleAndStatus('admin', 'active', 25, 0, 'email', 0);
+```
+
 ## Relationships
 
 ### One-to-One
