@@ -1,6 +1,6 @@
 <?php
 
-namespace AcidORM\Utils;
+namespace acidorm\Utils;
 
 class AnnotationParser
 {

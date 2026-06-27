@@ -1,9 +1,9 @@
 <?php
 
-namespace AcidORM;
+namespace acidorm;
 
 use Nette,
-	AcidORM\Managers;
+	acidorm\Managers;
 
 /**
  * @property Managers\PersistorManager $persistorManager
@@ -16,7 +16,7 @@ use Nette,
  * @property array $generators
  */
 
-class AcidORM
+class Engine
 {
 	use \Nette\SmartObject;
 	private ?Managers\PersistorManager $persistorManager = null;

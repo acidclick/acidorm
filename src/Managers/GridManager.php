@@ -1,11 +1,11 @@
 <?php
 
-namespace AcidORM\Managers;
+namespace acidorm\Managers;
 
 use Nette;
 /**
  * @property string $namespace
- * @property \DibiConnection $db
+ * @property \Dibi\Connection $db
  */
 class GridManager extends BaseManager
 {

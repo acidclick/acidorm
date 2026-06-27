@@ -1,6 +1,6 @@
 <?php
 
-namespace AcidORM\DB\Relationships;
+namespace acidorm\DB\Relationships;
 
 use Nette;
 

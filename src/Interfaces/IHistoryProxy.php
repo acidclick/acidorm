@@ -1,6 +1,6 @@
 <?php
 
-namespace AcidORM\Interfaces;
+namespace acidorm\Interfaces;
 
 use Nette;
 

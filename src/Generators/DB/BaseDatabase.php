@@ -1,9 +1,9 @@
 <?php
 
-namespace AcidORM\Generators\DB;
+namespace acidorm\Generators\DB;
 
 use Nette,
-	AcidORM\Generators;
+	acidorm\Generators;
 
 class BaseDatabase
 {
@@ -39,7 +39,7 @@ class BaseDatabase
 			}
 		}
 
-		$data  = "<?php\n\nnamespace Model\Data;\n\nuse Nette,\n\tAcidORM,\n\tModel;\n\n";
+		$data  = "<?php\n\nnamespace Model\Data;\n\nuse Nette,\n\tacidorm,\n\tModel;\n\n";
 
 		if(sizeof($annotations) > 0){
 			$data .= "/**\n";
@@ -50,9 +50,9 @@ class BaseDatabase
 		}
 
 
-		$data .= sprintf("class %s extends AcidORM\BaseObject\n{\n\n", $name);
+		$data .= sprintf("class %s extends acidorm\BaseObject\n{\n\n", $name);
 
-		$data .= "\t// AcidORM generated properties\n\n";
+		$data .= "\t// acidorm generated properties\n\n";
 
 		foreach($properties as $property){
 			if(isset($property->annotations) && sizeof($property->annotations) > 0){
@@ -72,7 +72,7 @@ class BaseDatabase
 			$data .= sprintf("\tprivate \$%s;\n", $dependency->name);
 		}
 
-		$data .= "\n\t// AcidORM generated properties";
+		$data .= "\n\t// acidorm generated properties";
 
 		$data .= "\n\n\t// User defined properties\n";
 
@@ -80,7 +80,7 @@ class BaseDatabase
 
 		$data .= "\t// User defined properties";
 
-		$data .= "\n\n\t// AcidORM generated methods\n\n";
+		$data .= "\n\n\t// acidorm generated methods\n\n";
 		
 		foreach($properties as $property){
 			$data .= sprintf("\tpublic function get%s()\n\t{\n\t\treturn \$this->%s;\n\t}\n\n", Nette\Utils\Strings::firstUpper($property->name), $property->name);
@@ -92,7 +92,7 @@ class BaseDatabase
 			$data .= sprintf("\tpublic function set%s(\$%s)\n\t{\n\t\t\$this->%s = \$%s;\n\t}\n\n", Nette\Utils\Strings::firstUpper($dependency->name), $dependency->name, $dependency->name, $dependency->name);
 		}		
 
-		$data .= "\t// AcidORM generated methods\n\n";
+		$data .= "\t// acidorm generated methods\n\n";
 
 		$data .= "\t// User defined methods\n";
 
@@ -110,7 +110,7 @@ class BaseDatabase
 	{
 		$filepath = sprintf('Persistors/%sPersistor.php', Nette\Utils\Strings::firstUpper($name));
 		if(!file_exists($this->appDir . '/model/' . $filepath)){
-			$data  = sprintf("<?php\n\nnamespace Model\Persistors;\n\nuse Nette,\n\tAcidORM;\n\nclass %sPersistor extends AcidORM\BasePersistor\n{\n\n}", $name);
+			$data  = sprintf("<?php\n\nnamespace Model\Persistors;\n\nuse Nette,\n\tacidorm;\n\nclass %sPersistor extends acidorm\BasePersistor\n{\n\n}", $name);
 			$this->saveFile($data, $filepath);
 		}
 	}
@@ -119,7 +119,7 @@ class BaseDatabase
 	{
 		$filepath = sprintf('Mappers/%sMapper.php', Nette\Utils\Strings::firstUpper($name));
 		if(!file_exists($this->appDir . '/model/' . $filepath)){
-			$data  = sprintf("<?php\n\nnamespace Model\Mappers;\n\nuse Nette,\n\tAcidORM;\n\nclass %sMapper extends AcidORM\BaseMapper\n{\n\n}", $name);
+			$data  = sprintf("<?php\n\nnamespace Model\Mappers;\n\nuse Nette,\n\tacidorm;\n\nclass %sMapper extends acidorm\BaseMapper\n{\n\n}", $name);
 			$this->saveFile($data, $filepath);
 		}
 	}
@@ -128,7 +128,7 @@ class BaseDatabase
 	{
 		$filepath = sprintf('Facades/%sFacade.php', Nette\Utils\Strings::firstUpper($name));
 		if(!file_exists($this->appDir . '/model/' . $filepath)){
-			$data  = sprintf("<?php\n\nnamespace Model\Facades;\n\nuse Nette,\n\tAcidORM;\n\nclass %sFacade extends AcidORM\BaseFacade\n{\n\n}", $name);
+			$data  = sprintf("<?php\n\nnamespace Model\Facades;\n\nuse Nette,\n\tacidorm;\n\nclass %sFacade extends acidorm\BaseFacade\n{\n\n}", $name);
 			$this->saveFile($data, $filepath);			
 		}
 	}	

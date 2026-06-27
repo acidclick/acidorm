@@ -1,6 +1,6 @@
 <?php
 
-namespace AcidORM\Managers;
+namespace acidorm\Managers;
 
 use Nette;
 /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace AcidORM\Traits;
+namespace acidorm\Traits;
 
 trait HistoryObject {
 

@@ -1,13 +1,13 @@
 <?php
 
-namespace AcidORM;
+namespace acidorm;
 
 use Nette;
-use AcidORM\Managers;
-use AcidORM\Utils\AnnotationParser;
-use AcidORM\Interfaces\IHistoryProxy;
-use AcidORM\Interfaces\IHistoryObject;
-use AcidORM\Traits\HistoryObject;
+use acidorm\Managers;
+use acidorm\Utils\AnnotationParser;
+use acidorm\Interfaces\IHistoryProxy;
+use acidorm\Interfaces\IHistoryObject;
+use acidorm\Traits\HistoryObject;
 
 /**
  * @property string $name

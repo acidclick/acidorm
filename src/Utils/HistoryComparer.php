@@ -1,10 +1,10 @@
 <?php
 
-namespace AcidORM\Utils;
+namespace acidorm\Utils;
 
-use AcidORM\Managers;
-use AcidORM\Interfaces\IHistoryProxy;
-use AcidORM\Utils\AnnotationParser;
+use acidorm\Managers;
+use acidorm\Interfaces\IHistoryProxy;
+use acidorm\Utils\AnnotationParser;
 
 class HistoryComparer
 {
