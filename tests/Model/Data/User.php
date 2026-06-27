@@ -4,28 +4,32 @@ declare(strict_types=1);
 namespace Model\Data;
 
 use AcidORM\BaseObject;
+use AcidORM\Attributes\Name;
+use AcidORM\Attributes\Plural;
+use AcidORM\Attributes\Label;
+use AcidORM\Attributes\DontMap;
+use AcidORM\Attributes\OneToMany;
+use AcidORM\Attributes\ManyToMany;
 
-/**
- * @name Uživatel
- * @plural Uzivatele
- */
+#[Name('Uživatel')]
+#[Plural('Uzivatele')]
 class User extends BaseObject
 {
-	/** @label ID */
+	#[Label('ID')]
 	public ?int $id = null;
 
-	/** @label Jméno */
+	#[Label('Jméno')]
 	public ?string $name = null;
 
-	/** @label Email */
+	#[Label('Email')]
 	public ?string $email = null;
 
-	/** @dontMap */
+	#[DontMap]
 	public ?string $computed = null;
 
-	/** @oneToMany(className=Article, foreignKey=userId) */
+	#[OneToMany(className: 'Article', foreignKey: 'userId')]
 	public ?array $articles = null;
 
-	/** @manyToMany(className=Tag, table=user_tag, foreignKey=tagId, column=userId) */
+	#[ManyToMany(className: 'Tag', table: 'user_tag', foreignKey: 'tagId', column: 'userId')]
 	public ?array $tags = null;
 }

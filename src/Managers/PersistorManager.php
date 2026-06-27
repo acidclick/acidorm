@@ -25,7 +25,7 @@ class PersistorManager extends BaseManager
 		if(!isset($this->data[$className])){
 			$this->data[$className] = $persistor = new $className($this->db, $this->mapperManager);
 			if ($this->cache !== null) {
-				$persistor->cache = $this->cache;
+				$persistor->setCache($this->cache);
 			}
 		}
 		return $this->data[$className];

@@ -4,19 +4,21 @@ declare(strict_types=1);
 namespace Model\Data;
 
 use AcidORM\BaseObject;
+use AcidORM\Attributes\Label;
+use AcidORM\Attributes\OneToOne;
 
 class Article extends BaseObject
 {
 	public ?int $id = null;
 
-	/** @label Titulek */
+	#[Label('Titulek')]
 	public ?string $title = null;
 
-	/** @label Obsah */
+	#[Label('Obsah')]
 	public ?string $body = null;
 
 	public ?int $userId = null;
 
-	/** @oneToOne(className=User, propertyName=userId, canBeNull=true) */
+	#[OneToOne(className: 'User', propertyName: 'userId', canBeNull: true)]
 	public ?User $author = null;
 }

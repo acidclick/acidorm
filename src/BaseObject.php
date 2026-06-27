@@ -2,7 +2,8 @@
 
 namespace AcidORM;
 
-use AcidORM\Utils\AnnotationParser;
+use AcidORM\Utils\AttributeReader;
+use AcidORM\Attributes\Label;
 
 class BaseObject implements \JsonSerializable
 {
@@ -17,20 +18,19 @@ class BaseObject implements \JsonSerializable
 		return $data;
 	}
 
-	public function getLabel($name = null)
+	public function getLabel(?string $name = null): string
 	{
-		if(property_exists($this, 'label')){
+		if (property_exists($this, 'label')) {
 			return $this->label;
-		} else if($name !== null){
-			if(property_exists($this, $name)){
-				$property = (new \ReflectionClass($this))->getProperty($name);
-				if(AnnotationParser::hasAnnotation($property, 'label')){
-					return AnnotationParser::getAnnotation($property, 'label');
-				}
+		}
+
+		if ($name !== null && property_exists($this, $name)) {
+			$attr = AttributeReader::get(new \ReflectionClass($this)->getProperty($name), Label::class);
+			if ($attr !== null) {
+				return $attr->value;
 			}
 		}
 
 		return '@' . $name;
 	}
-
 }
