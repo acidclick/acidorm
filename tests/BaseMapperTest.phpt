@@ -29,12 +29,12 @@ final class BaseMapperTest extends TestCase
 
 	public function testGetTableReturnsEntityName(): void
 	{
-		Assert::same('User', $this->mapper->getTable());
+		Assert::same('User', $this->mapper->table);
 	}
 
 	public function testGetTableForArticleMapper(): void
 	{
-		Assert::same('Article', $this->articleMapper->getTable());
+		Assert::same('Article', $this->articleMapper->table);
 	}
 
 	// --- create ---
@@ -189,9 +189,9 @@ final class BaseMapperTest extends TestCase
 		$rels = $this->articleMapper->getOneToOneRelationships();
 		Assert::true(array_key_exists('author', $rels));
 		Assert::type(OneToOne::class, $rels['author']);
-		Assert::same('User', $rels['author']->getClassName());
-		Assert::same('userId', $rels['author']->getPropertyName());
-		Assert::true($rels['author']->getCanBeNull());
+		Assert::same('User', $rels['author']->className);
+		Assert::same('userId', $rels['author']->propertyName);
+		Assert::true($rels['author']->canBeNull);
 	}
 
 	// --- getOneToManyRelationships ---
@@ -201,8 +201,8 @@ final class BaseMapperTest extends TestCase
 		$rels = $this->mapper->getOneToManyRelationships();
 		Assert::true(array_key_exists('articles', $rels));
 		Assert::type(OneToMany::class, $rels['articles']);
-		Assert::same('Article', $rels['articles']->getClassName());
-		Assert::same('userId', $rels['articles']->getPropertyName());
+		Assert::same('Article', $rels['articles']->className);
+		Assert::same('userId', $rels['articles']->foreignKey);
 	}
 
 	public function testArticleHasNoOneToManyRelationships(): void
@@ -217,10 +217,10 @@ final class BaseMapperTest extends TestCase
 		$rels = $this->mapper->getManyToManyRelationships();
 		Assert::true(array_key_exists('tags', $rels));
 		Assert::type(ManyToMany::class, $rels['tags']);
-		Assert::same('Tag', $rels['tags']->getClassName());
-		Assert::same('user_tag', $rels['tags']->getTable());
-		Assert::same('tagId', $rels['tags']->getForeignKey());
-		Assert::same('userId', $rels['tags']->getColumn());
+		Assert::same('Tag', $rels['tags']->className);
+		Assert::same('user_tag', $rels['tags']->table);
+		Assert::same('tagId', $rels['tags']->foreignKey);
+		Assert::same('userId', $rels['tags']->column);
 	}
 
 	public function testArticleHasNoManyToManyRelationships(): void

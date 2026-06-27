@@ -12,14 +12,16 @@ use AcidORM\Traits\HistoryObject;
 
 class BaseFacade
 {
-	use \Nette\SmartObject;
-
 	protected ?string $name = null;
-	protected ?Managers\PersistorManager $persistorManager = null;
-	protected ?Managers\MapperManager $mapperManager = null;
-	private ?Nette\Caching\Cache $cache = null;
-	protected ?Managers\FacadeManager $facadeManager = null;
-	protected ?array $parameters = null;
+	public ?Managers\PersistorManager $persistorManager = null;
+	public ?Managers\MapperManager $mapperManager = null;
+	public ?Nette\Caching\Cache $cache = null;
+	public ?Managers\FacadeManager $facadeManager = null;
+	public ?array $parameters = null;
+
+	public BasePersistor $persistor {
+		get => $this->persistorManager->getPersistor($this->name);
+	}
 
 	public function __construct()
 	{
@@ -31,14 +33,9 @@ class BaseFacade
 
 	public function startup(): void {}
 
-	public function setPersistorManager(Managers\PersistorManager $persistorManager): void
+	public function getPersistor(): BasePersistor
 	{
-		$this->persistorManager = $persistorManager;
-	}
-
-	public function setMapperManager(Managers\MapperManager $mapperManager): void
-	{
-		$this->mapperManager = $mapperManager;
+		return $this->persistor;
 	}
 
 	public function mapDependencies(BaseObject &$baseObject = null, $withDependencies = false, $dependencies = null): void
@@ -66,14 +63,6 @@ class BaseFacade
 		}
 	}
 
-	public function getPersistor()
-	{
-		return $this->persistorManager->getPersistor($this->name);
-	}
-
-	public function setCache(Nette\Caching\Cache $cache): void { $this->cache = $cache; }
-	public function getCache(): ?Nette\Caching\Cache { return $this->cache; }
-
 	public function getKeyValuePairs($className = null, $key = 'id', $value = 'name'): array
 	{
 		if ($className === null) $className = $this->name;
@@ -83,16 +72,6 @@ class BaseFacade
 	public function getKeyValue($key = 'id', $value = 'name', $restrictions = []): array
 	{
 		return $this->persistor->getKeyValuePairs($key, $value, $restrictions);
-	}
-
-	public function setFacadeManager(Managers\FacadeManager &$facadeManager): void
-	{
-		$this->facadeManager = $facadeManager;
-	}
-
-	public function setParameters($parameters): void
-	{
-		$this->parameters = $parameters;
 	}
 
 	public function &__call($name, $args)
@@ -236,7 +215,7 @@ class BaseFacade
 			do {
 				$unique = false;
 				$object->key = HistoryObject::generateUniqueId();
-				$q = $this->persistorManager->getDb()->select('id')->from('%n', HistoryObject::getTableName())->where('[key] = %s', $object->key)->limit(1);
+				$q = $this->persistorManager->db->select('id')->from('%n', HistoryObject::getTableName())->where('[key] = %s', $object->key)->limit(1);
 				foreach ($q as $r) { $unique = true; }
 			} while ($unique);
 		}
@@ -315,9 +294,9 @@ class BaseFacade
 	{
 		$data = [];
 		if ($full) {
-			$this->getPersistor()->getKeyValuePairsHierarchy($data, 0, false);
+			$this->persistor->getKeyValuePairsHierarchy($data, 0, false);
 		} else {
-			$this->getPersistor()->getKeyValuePairsHierarchy($data);
+			$this->persistor->getKeyValuePairsHierarchy($data);
 		}
 		return $data;
 	}

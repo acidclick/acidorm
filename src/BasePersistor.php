@@ -8,14 +8,12 @@ use AcidORM\Attributes;
 
 class BasePersistor
 {
-	use \Nette\SmartObject;
-
-	private ?\Dibi\Connection $db = null;
-	private ?BaseObject $object = null;
-	private ?BaseMapper $mapper = null;
-	private ?string $table = null;
-	private ?Managers\MapperManager $mapperManager = null;
-	private ?Nette\Caching\Cache $cache = null;
+	public ?\Dibi\Connection $db = null;
+	public private(set) ?BaseObject $object = null;
+	public private(set) ?BaseMapper $mapper = null;
+	public private(set) ?string $table = null;
+	public private(set) ?Managers\MapperManager $mapperManager = null;
+	public ?Nette\Caching\Cache $cache = null;
 
 	public function __construct($db, $mapperManager)
 	{
@@ -30,28 +28,21 @@ class BasePersistor
 		}
 	}
 
-	public function getDb() { return $this->db; }
-	public function setDb($db): void { $this->db = $db; }
-	public function getMapperManager() { return $this->mapperManager; }
-	public function getMapper() { return $this->mapper; }
-	public function getObject() { return $this->object; }
-	public function getTable(): ?string { return $this->table; }
-
 	public function insertUpdate(BaseObject $baseObject): void
 	{
 		$array = $this->mapper->toArray($baseObject);
 
 		if ($this->db->getConfig('driver') === 'mysqli' || $this->db->getConfig('driver') === 'mysql') {
-			$this->db->query("insert ignore into [{$this->mapper->getTable()}] ", $array, ' on duplicate key update %a', $array);
+			$this->db->query("insert ignore into [{$this->mapper->table}] ", $array, ' on duplicate key update %a', $array);
 		} else {
 			if ($baseObject->id === null) {
-				$this->db->insert($this->mapper->getTable(), $array)->execute();
+				$this->db->insert($this->mapper->table, $array)->execute();
 				try {
 					$baseObject->id = $this->db->insertId;
 				} catch (\Exception | \Error $ex) {}
 			} else {
 				unset($array['id']);
-				$this->db->update($this->mapper->getTable(), $array)->where('[id] = %i', $baseObject->id)->execute();
+				$this->db->update($this->mapper->table, $array)->where('[id] = %i', $baseObject->id)->execute();
 			}
 		}
 
@@ -64,7 +55,7 @@ class BasePersistor
 
 	public function delete($id): void
 	{
-		$this->db->delete($this->mapper->getTable())->where('id = %i', $id)->execute();
+		$this->db->delete($this->mapper->table)->where('id = %i', $id)->execute();
 	}
 
 	public function getById($id, $withDependencies = false, $dependencies = null): ?BaseObject
@@ -159,7 +150,7 @@ class BasePersistor
 
 	public function getAllForOneToMany(Attributes\OneToMany $oneToMany, $value, $withDependencies = false, $dependencies = null): array
 	{
-		return $this->getAllByProperty($oneToMany->getPropertyName(), $value, $withDependencies, $dependencies);
+		return $this->getAllByProperty($oneToMany->foreignKey, $value, $withDependencies, $dependencies);
 	}
 
 	public function getAllForManyToMany(Attributes\ManyToMany $manyToMany, $value, $withDependencies = false, $dependencies = null): array
@@ -214,11 +205,11 @@ class BasePersistor
 			}
 		}
 
-		$q = $this->db->select($columns)->from(sprintf('[%s] [%s]', $this->mapper->getTable(), 'object'));
+		$q = $this->db->select($columns)->from(sprintf('[%s] [%s]', $this->mapper->table, 'object'));
 
 		if ($withDependencies) {
 			foreach ($dependencies as $property => $dependency) {
-				$table = $this->mapperManager->getMapper($dependency->className)->getTable();
+				$table = $this->mapperManager->getMapper($dependency->className)->table;
 				if ($dependency->canBeNull) {
 					$q = $q->leftJoin(sprintf('[%s] [%s]', $table, $property))
 						->on(sprintf('[%s].[id] = [object].[%s]', $property, $dependency->propertyName));
@@ -232,12 +223,9 @@ class BasePersistor
 		return $q;
 	}
 
-	public function setCache(Nette\Caching\Cache $cache): void { $this->cache = $cache; }
-	public function getCache(): ?Nette\Caching\Cache { return $this->cache; }
-
 	public function getKeyValuePairs($key = 'id', $value = 'name', $restrictions = []): array
 	{
-		$q = $this->db->select(sprintf('[%s], [%s]', $key, $value))->from($this->mapper->getTable());
+		$q = $this->db->select(sprintf('[%s], [%s]', $key, $value))->from($this->mapper->table);
 		foreach ($restrictions as $restrictionKey => $restrictionValue) {
 			$q->where('%n = %s', $restrictionKey, $restrictionValue);
 		}

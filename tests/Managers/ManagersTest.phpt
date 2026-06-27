@@ -25,8 +25,8 @@ final class ManagersTest extends TestCase
 		$this->cache           = new Cache(new MemoryStorage());
 		$this->mapperManager   = new MapperManager();
 		$this->persistorManager = new PersistorManager();
-		$this->persistorManager->setMapperManager($this->mapperManager);
-		$this->persistorManager->setDb($this->db);
+		$this->persistorManager->mapperManager = $this->mapperManager;
+		$this->persistorManager->db = $this->db;
 	}
 
 	// --- MapperManager ---
@@ -49,35 +49,35 @@ final class ManagersTest extends TestCase
 		Assert::type(UserMapper::class, $mapper);
 	}
 
-	// --- PersistorManager: settery / gettery ---
+	// --- PersistorManager: properties ---
 
-	public function testGetDbReturnsSameConnection(): void
+	public function testDbReturnsSameConnection(): void
 	{
-		Assert::same($this->db, $this->persistorManager->getDb());
+		Assert::same($this->db, $this->persistorManager->db);
 	}
 
-	public function testSetDbStoresConnection(): void
+	public function testDbStoresConnection(): void
 	{
 		$newDb = new \Dibi\Connection(['driver' => 'dummy']);
-		$this->persistorManager->setDb($newDb);
-		Assert::same($newDb, $this->persistorManager->getDb());
+		$this->persistorManager->db = $newDb;
+		Assert::same($newDb, $this->persistorManager->db);
 	}
 
-	public function testGetMapperManagerReturnsSameManager(): void
+	public function testMapperManagerReturnsSameManager(): void
 	{
-		Assert::same($this->mapperManager, $this->persistorManager->getMapperManager());
+		Assert::same($this->mapperManager, $this->persistorManager->mapperManager);
 	}
 
-	public function testGetCacheReturnsNullByDefault(): void
+	public function testCacheNullByDefault(): void
 	{
 		$fresh = new PersistorManager();
-		Assert::null($fresh->getCache());
+		Assert::null($fresh->cache);
 	}
 
-	public function testSetCacheStoresCache(): void
+	public function testCacheStoresCache(): void
 	{
-		$this->persistorManager->setCache($this->cache);
-		Assert::same($this->cache, $this->persistorManager->getCache());
+		$this->persistorManager->cache = $this->cache;
+		Assert::same($this->cache, $this->persistorManager->cache);
 	}
 
 	// --- PersistorManager: getPersistor ---
@@ -97,18 +97,18 @@ final class ManagersTest extends TestCase
 	public function testGetPersistorWithoutCacheDoesNotThrow(): void
 	{
 		$manager = new PersistorManager();
-		$manager->setDb($this->db);
-		$manager->setMapperManager($this->mapperManager);
+		$manager->db = $this->db;
+		$manager->mapperManager = $this->mapperManager;
 		$persistor = $manager->getPersistor('User');
 		Assert::type(UserPersistor::class, $persistor);
-		Assert::null($persistor->getCache());
+		Assert::null($persistor->cache);
 	}
 
 	public function testGetPersistorPropagatesCache(): void
 	{
-		$this->persistorManager->setCache($this->cache);
+		$this->persistorManager->cache = $this->cache;
 		$persistor = $this->persistorManager->getPersistor('User');
-		Assert::same($this->cache, $persistor->getCache());
+		Assert::same($this->cache, $persistor->cache);
 	}
 
 	public function testGetPersistorViaMagicProperty(): void

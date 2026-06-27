@@ -3,68 +3,33 @@
 namespace AcidORM\Managers;
 
 use Nette;
-/**
- * @property MapperManager $mapperManager
- * @property string $namespace
- * @property \Dibi\Connection $db
- * @property Nette\Caching\Cache $cache
- */
+
 class PersistorManager extends BaseManager
 {
-
 	protected string $namespace = 'Model\\Persistors\\';
 
-	protected ?MapperManager $mapperManager = null;
+	public ?MapperManager $mapperManager = null;
+	public ?\Dibi\Connection $db = null;
+	public ?Nette\Caching\Cache $cache = null;
 
-	protected ?\Dibi\Connection $db = null;
-
-	protected ?Nette\Caching\Cache $cache = null;
-
-	public function getPersistor($name){
+	public function getPersistor($name)
+	{
 		$className = $this->namespace . $name . 'Persistor';
-		if(!isset($this->data[$className])){
+		if (!isset($this->data[$className])) {
 			$this->data[$className] = $persistor = new $className($this->db, $this->mapperManager);
 			if ($this->cache !== null) {
-				$persistor->setCache($this->cache);
+				$persistor->cache = $this->cache;
 			}
 		}
 		return $this->data[$className];
 	}
 
-	public function setMapperManager(MapperManager $mapperManager){
-		$this->mapperManager = $mapperManager;
-	}
-
-	public function getMapperManager(){
-		return $this->mapperManager;
-	}
-
-	public function setDb($db){
-		$this->db = $db;
-	}
-
-	public function getDb()
+	public function &__get($name)
 	{
-		return $this->db;
+		if (preg_match('/^(.+)Persistor$/', $name, $regs)) {
+			$persistor = $this->getPersistor(Nette\Utils\Strings::firstUpper($regs[1]));
+			return $persistor;
+		}
+		throw new \Exception("Undefined property: $name");
 	}
-
-	public function setCache(Nette\Caching\Cache $cache)
-	{
-		$this->cache = $cache;
-	}
-
-	public function getCache()
-	{
-		return $this->cache;
-	}	
-
-    public function &__get($name)
-    {
-    	if(preg_match('/^(.+)Persistor$/', $name, $regs)){
-    		$persistor = $this->getPersistor(Nette\Utils\Strings::firstUpper($regs[1]));
-    		return $persistor;
-    	}
-
-    	parent::__get($name);
-    }	
 }

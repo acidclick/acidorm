@@ -23,31 +23,31 @@ final class BasePersistorTest extends TestCase
 		$this->persistor      = new UserPersistor($this->db, $this->mapperManager);
 	}
 
-	// --- constructor / gettery ---
+	// --- constructor / properties ---
 
-	public function testGetTableReturnsEntityName(): void
+	public function testTableReturnsEntityName(): void
 	{
-		Assert::same('User', $this->persistor->getTable());
+		Assert::same('User', $this->persistor->table);
 	}
 
-	public function testGetObjectReturnsUserInstance(): void
+	public function testObjectReturnsUserInstance(): void
 	{
-		Assert::type(User::class, $this->persistor->getObject());
+		Assert::type(User::class, $this->persistor->object);
 	}
 
-	public function testGetMapperReturnsUserMapper(): void
+	public function testMapperReturnsUserMapper(): void
 	{
-		Assert::type(UserMapper::class, $this->persistor->getMapper());
+		Assert::type(UserMapper::class, $this->persistor->mapper);
 	}
 
-	public function testGetDbReturnsSameConnection(): void
+	public function testDbReturnsSameConnection(): void
 	{
-		Assert::same($this->db, $this->persistor->getDb());
+		Assert::same($this->db, $this->persistor->db);
 	}
 
-	public function testGetMapperManagerReturnsSameManager(): void
+	public function testMapperManagerReturnsSameManager(): void
 	{
-		Assert::same($this->mapperManager, $this->persistor->getMapperManager());
+		Assert::same($this->mapperManager, $this->persistor->mapperManager);
 	}
 
 	// --- dotazy s DummyDriver (nevracejí žádná data) ---
@@ -97,13 +97,13 @@ final class BasePersistorTest extends TestCase
 		Assert::true(true);
 	}
 
-	// --- setDb / getDb ---
+	// --- db property ---
 
-	public function testSetDbStoresNewConnection(): void
+	public function testDbStoresNewConnection(): void
 	{
 		$newDb = new \Dibi\Connection(['driver' => 'dummy']);
-		$this->persistor->setDb($newDb);
-		Assert::same($newDb, $this->persistor->getDb());
+		$this->persistor->db = $newDb;
+		Assert::same($newDb, $this->persistor->db);
 	}
 
 	// --- getDependencies ---

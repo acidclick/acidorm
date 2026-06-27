@@ -5,52 +5,14 @@ namespace AcidORM\Generators;
 use Nette;
 use AcidORM\Generators\DB\BaseDatabase;
 
-/**
- * @property \Dibi\Connection $db
- * @property string $databaseDriver
- * @property BaseDatabase $adapter
- * @property string $appDir
- */
 class DatabaseFirst implements IDatabaseFirst
 {
-	use \Nette\SmartObject;
-	
-	private $db;
-	private $databaseDriver;
-	private $adapter;
-	private $appDir;
+	public ?\Dibi\Connection $db = null;
+	public ?string $databaseDriver = null;
+	public ?string $appDir = null;
+	private ?BaseDatabase $adapter = null;
 
-	public function getDb()
-	{
-		return $this->db;
-	}
-
-	public function setDb($db)
-	{
-		$this->db = $db;
-	}
-
-	public function getDatabaseDriver()
-	{
-		return $this->databaseDriver;
-	}
-
-	public function setDatabaseDriver($databaseDriver)
-	{
-		$this->databaseDriver = $databaseDriver;
-	}
-
-	public function getAppDir()
-	{
-		return $this->appDir;
-	}	
-
-	public function setAppDir($appDir)
-	{
-		$this->appDir = $appDir;
-	}	
-
-	public function createAdapter()
+	public function createAdapter(): void
 	{
 		$class = 'AcidORM\\Generators\\DB\\' . Nette\Utils\Strings::firstUpper($this->databaseDriver);
 		$this->adapter = new $class();
@@ -58,19 +20,15 @@ class DatabaseFirst implements IDatabaseFirst
 		$this->adapter->appDir = $this->appDir;
 	}
 
-	public function createFromTable($table)
+	public function createFromTable($table): void
 	{
 		$this->adapter || $this->createAdapter();
 		$this->adapter->createFromTable($table);
 	}
 
-	public function createAll()
+	public function createAll(): void
 	{
 		$this->adapter || $this->createAdapter();
 		$this->adapter->createAll();
 	}
-
-
-
-
 }

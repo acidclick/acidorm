@@ -5,61 +5,18 @@ namespace AcidORM;
 use Nette,
 	AcidORM\Managers;
 
-/**
- * @property Managers\PersistorManager $persistorManager
- * @property Managers\MapperManager $mapperManager
- * @property Managers\GridManager $gridManager
- * @property Managers\FacadeManager $facadeManager
- * @property \Dibi\Connection $db
- * @property Nette\Caching\Cache $cacheProvider
- * @property array $parameters
- * @property array $generators
- */
-
 class Engine
 {
-	use \Nette\SmartObject;
-	private ?Managers\PersistorManager $persistorManager = null;
-	private ?Managers\MapperManager $mapperManager = null;
-	private ?Managers\GridManager $gridManager = null;
-	private ?Managers\FacadeManager $facadeManager = null;
+	public private(set) ?Managers\PersistorManager $persistorManager = null;
+	public private(set) ?Managers\MapperManager $mapperManager = null;
+	public private(set) ?Managers\GridManager $gridManager = null;
+	public private(set) ?Managers\FacadeManager $facadeManager = null;
 
-	private ?\Dibi\Connection $db = null;
-	private ?Nette\Caching\Cache $cacheProvider = null;
-
-	private array $parameters = [];
+	public ?\Dibi\Connection $db = null;
+	public ?Nette\Caching\Cache $cacheProvider = null;
+	public array $parameters = [];
 
 	private array $generators = [];
-
-	public function setDb(\Dibi\Connection $db)
-	{
-		$this->db = $db;
-	}
-
-	public function getDb()
-	{
-		return $this->db;
-	}
-
-	public function getCacheProvider()
-	{
-		return $this->cacheProvider;
-	}
-
-	public function setCacheProvider($cacheProvider)
-	{
-		$this->cacheProvider = $cacheProvider;
-	}
-
-	public function getParameters()
-	{
-		return $this->parameters;
-	}
-
-	public function setParameters($parameters)
-	{
-		$this->parameters = $parameters;
-	}
 
 	public function startup()
 	{
@@ -106,81 +63,79 @@ class Engine
 		return $facadeManager;
 	}
 
-    public function &__get($name)
-    {
-    	if(preg_match('/^(.+)Facade$/', $name, $regs)){
-    		$facade = $this->facadeManager->{$name};
-    		return $facade;
-    	}
+	public function &__get($name)
+	{
+		if (preg_match('/^(.+)Facade$/', $name, $regs)) {
+			$facade = $this->facadeManager->{$name};
+			return $facade;
+		}
 
-    	if(preg_match('/^(.+)Mapper$/', $name, $regs)){
-    		$mapper = $this->mapperManager->{$name};
-    		return $mapper;
-    	}    	
+		if (preg_match('/^(.+)Mapper$/', $name, $regs)) {
+			$mapper = $this->mapperManager->{$name};
+			return $mapper;
+		}
 
-    	if(preg_match('/^(.+)Persistor$/', $name, $regs)){
-    		$persistor = $this->persistorManager->{$name};
-    		return $persistor;
-    	}   
+		if (preg_match('/^(.+)Persistor$/', $name, $regs)) {
+			$persistor = $this->persistorManager->{$name};
+			return $persistor;
+		}
 
-    	if(preg_match('/^(.+)Grid$/', $name, $regs)){
-    		$grid = $this->gridManager->{$name};
-    		return $grid;
-    	}
+		if (preg_match('/^(.+)Grid$/', $name, $regs)) {
+			$grid = $this->gridManager->{$name};
+			return $grid;
+		}
 
-    	if(isset($this->{$name})) return $this->{$name};
-    	throw new \Exception;
-    }
+		throw new \Exception("Undefined property: $name");
+	}
 
-    public function getFacadeManager()
-    {
-    	return $this->facadeManager;
-    }	
+	public function getFacadeManager(): ?Managers\FacadeManager
+	{
+		return $this->facadeManager;
+	}
 
-    public function getFacade($name)
-    {
-    	$facade = $this->facadeManager->getFacade($name);
-    	return $this->facadeManager->getFacade($name);
-    }
+	public function getFacade($name)
+	{
+		return $this->facadeManager->getFacade($name);
+	}
 
-    public function getGrid($name)
-    {
-    	return $this->gridManager->getGrid($name);
-    }
+	public function getGrid($name)
+	{
+		return $this->gridManager->getGrid($name);
+	}
 
-    public function getMapper($name)
-    {
-    	return $this->mapperManager->getMapper($name);
-    }
+	public function getMapper($name)
+	{
+		return $this->mapperManager->getMapper($name);
+	}
 
-    public function getPersistor($name)
-    {
-    	return $this->persistorManager->getPersistor($name);
-    }
+	public function getPersistor($name)
+	{
+		return $this->persistorManager->getPersistor($name);
+	}
 
-    public function getMapperManager()
-    {
-    	return $this->mapperManager;
-    }
+	public function getMapperManager(): ?Managers\MapperManager
+	{
+		return $this->mapperManager;
+	}
 
-    public function getPersistorManager()
-    {
-    	return $this->persistorManager;
-    }
+	public function getPersistorManager(): ?Managers\PersistorManager
+	{
+		return $this->persistorManager;
+	}
 
-    public function getGridManager()
-    {
-    	return $this->gridManager;
-    }    
+	public function getGridManager(): ?Managers\GridManager
+	{
+		return $this->gridManager;
+	}
 
-    public function getGenerator($type)
-    {
-    	if(!isset($this->generators[$type])){
-    		$this->generators[$type] = $this->{'create' . $type . 'Generator'}();
-    	}
+	public function getGenerator($type)
+	{
+		if (!isset($this->generators[$type])) {
+			$this->generators[$type] = $this->{"create{$type}Generator"}();
+		}
 
-    	return $this->generators[$type];
-    }
+		return $this->generators[$type];
+	}
 
 	public function createDatabaseFirstGenerator()
 	{
@@ -195,27 +150,27 @@ class Engine
 	public function createDirStructure()
 	{
 		$dataDir = $this->parameters['appDir'] . '/model/Data';
-		if(!is_dir($dataDir)) mkdir($dataDir, 0755, true);
+		if (!is_dir($dataDir)) mkdir($dataDir, 0755, true);
 
 		$enumsDir = $this->parameters['appDir'] . '/model/Enums';
-		if(!is_dir($enumsDir)) mkdir($enumsDir, 0755);
+		if (!is_dir($enumsDir)) mkdir($enumsDir, 0755);
 
 		$interfacesDir = $this->parameters['appDir'] . '/model/Interfaces';
-		if(!is_dir($interfacesDir)) mkdir($interfacesDir, 0755);		
+		if (!is_dir($interfacesDir)) mkdir($interfacesDir, 0755);
 
 		$mappersDir = $this->parameters['appDir'] . '/model/Mappers';
-		if(!is_dir($mappersDir)) mkdir($mappersDir, 0755);		
+		if (!is_dir($mappersDir)) mkdir($mappersDir, 0755);
 
 		$persistorsDir = $this->parameters['appDir'] . '/model/Persistors';
-		if(!is_dir($persistorsDir)) mkdir($persistorsDir, 0755);		
+		if (!is_dir($persistorsDir)) mkdir($persistorsDir, 0755);
 
 		$facadesDir = $this->parameters['appDir'] . '/model/Facades';
-		if(!is_dir($facadesDir)) mkdir($facadesDir, 0755);
+		if (!is_dir($facadesDir)) mkdir($facadesDir, 0755);
 
 		$gridsDir = $this->parameters['appDir'] . '/model/Grids';
-		if(!is_dir($gridsDir)) mkdir($gridsDir, 0755);		
+		if (!is_dir($gridsDir)) mkdir($gridsDir, 0755);
 
 		$formsDir = $this->parameters['appDir'] . '/model/Forms';
-		if(!is_dir($formsDir)) mkdir($formsDir, 0755);		
+		if (!is_dir($formsDir)) mkdir($formsDir, 0755);
 	}
 }

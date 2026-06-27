@@ -10,6 +10,4 @@ readonly class OneToMany
 		public string $foreignKey,
 	) {}
 
-	public function getClassName(): string { return $this->className; }
-	public function getPropertyName(): string { return $this->foreignKey; }
 }

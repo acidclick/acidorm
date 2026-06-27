@@ -7,11 +7,9 @@ use AcidORM\Attributes;
 
 class BaseMapper
 {
-	use \Nette\SmartObject;
-
 	private string $namespace = 'Model\\Data\\';
 	private ?BaseObject $object = null;
-	private ?string $table = null;
+	public private(set) ?string $table = null;
 	private ?array $oneToOneRelations = null;
 	private ?array $manyToManyRelations = null;
 	private ?array $oneToManyRelations = null;
@@ -113,11 +111,6 @@ class BaseMapper
 			}
 		}
 		return $this->manyToManyRelations;
-	}
-
-	public function getTable(): string
-	{
-		return $this->table;
 	}
 
 	private function isRelationship(\ReflectionProperty $property): bool

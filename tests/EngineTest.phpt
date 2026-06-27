@@ -26,44 +26,44 @@ final class EngineTest extends TestCase
 		$this->cache = new Cache(new MemoryStorage());
 	}
 
-	// --- getDb / setDb ---
+	// --- db ---
 
-	public function testGetDbReturnsNullInitially(): void
+	public function testDbNullInitially(): void
 	{
-		Assert::null($this->engine->getDb());
+		Assert::null($this->engine->db);
 	}
 
-	public function testSetDbStoresConnection(): void
+	public function testDbStoresConnection(): void
 	{
-		$this->engine->setDb($this->db);
-		Assert::same($this->db, $this->engine->getDb());
+		$this->engine->db = $this->db;
+		Assert::same($this->db, $this->engine->db);
 	}
 
-	// --- getCacheProvider / setCacheProvider ---
+	// --- cacheProvider ---
 
-	public function testGetCacheProviderReturnsNullInitially(): void
+	public function testCacheProviderNullInitially(): void
 	{
-		Assert::null($this->engine->getCacheProvider());
+		Assert::null($this->engine->cacheProvider);
 	}
 
-	public function testSetCacheProviderStoresCache(): void
+	public function testCacheProviderStoresCache(): void
 	{
-		$this->engine->setCacheProvider($this->cache);
-		Assert::same($this->cache, $this->engine->getCacheProvider());
+		$this->engine->cacheProvider = $this->cache;
+		Assert::same($this->cache, $this->engine->cacheProvider);
 	}
 
-	// --- getParameters / setParameters ---
+	// --- parameters ---
 
-	public function testGetParametersReturnsEmptyArrayInitially(): void
+	public function testParametersEmptyArrayInitially(): void
 	{
-		Assert::equal([], $this->engine->getParameters());
+		Assert::equal([], $this->engine->parameters);
 	}
 
-	public function testSetParametersStoresAll(): void
+	public function testParametersStoresAll(): void
 	{
 		$params = ['databaseDriver' => 'mysqli', 'appDir' => '/app'];
-		$this->engine->setParameters($params);
-		Assert::same($params, $this->engine->getParameters());
+		$this->engine->parameters = $params;
+		Assert::same($params, $this->engine->parameters);
 	}
 
 	// --- startup() ---
@@ -71,25 +71,25 @@ final class EngineTest extends TestCase
 	public function testStartupCreatesMapperManager(): void
 	{
 		$this->startupEngine();
-		Assert::type(MapperManager::class, $this->engine->getMapperManager());
+		Assert::type(MapperManager::class, $this->engine->mapperManager);
 	}
 
 	public function testStartupCreatesPersistorManager(): void
 	{
 		$this->startupEngine();
-		Assert::type(PersistorManager::class, $this->engine->getPersistorManager());
+		Assert::type(PersistorManager::class, $this->engine->persistorManager);
 	}
 
 	public function testStartupCreatesFacadeManager(): void
 	{
 		$this->startupEngine();
-		Assert::type(FacadeManager::class, $this->engine->getFacadeManager());
+		Assert::type(FacadeManager::class, $this->engine->facadeManager);
 	}
 
 	public function testStartupCreatesGridManager(): void
 	{
 		$this->startupEngine();
-		Assert::type(GridManager::class, $this->engine->getGridManager());
+		Assert::type(GridManager::class, $this->engine->gridManager);
 	}
 
 	// --- vazby mezi managery ---
@@ -97,44 +97,44 @@ final class EngineTest extends TestCase
 	public function testPersistorManagerReceivesDb(): void
 	{
 		$this->startupEngine();
-		Assert::same($this->db, $this->engine->getPersistorManager()->getDb());
+		Assert::same($this->db, $this->engine->persistorManager->db);
 	}
 
 	public function testPersistorManagerReceivesCache(): void
 	{
 		$this->startupEngine();
-		Assert::same($this->cache, $this->engine->getPersistorManager()->getCache());
+		Assert::same($this->cache, $this->engine->persistorManager->cache);
 	}
 
 	public function testPersistorManagerReceivesMapperManager(): void
 	{
 		$this->startupEngine();
 		Assert::same(
-			$this->engine->getMapperManager(),
-			$this->engine->getPersistorManager()->getMapperManager()
+			$this->engine->mapperManager,
+			$this->engine->persistorManager->mapperManager
 		);
 	}
 
 	public function testFacadeManagerReceivesCache(): void
 	{
 		$this->startupEngine();
-		Assert::same($this->cache, $this->engine->getFacadeManager()->getCache());
+		Assert::same($this->cache, $this->engine->facadeManager->cache);
 	}
 
 	public function testFacadeManagerReceivesParameters(): void
 	{
 		$params = ['key' => 'value'];
-		$this->engine->setParameters($params);
+		$this->engine->parameters = $params;
 		$this->startupEngine();
-		Assert::same($params, $this->engine->getFacadeManager()->getParameters());
+		Assert::same($params, $this->engine->facadeManager->parameters);
 	}
 
 	public function testFacadeManagerReceivesPersistorManager(): void
 	{
 		$this->startupEngine();
 		Assert::same(
-			$this->engine->getPersistorManager(),
-			$this->engine->getFacadeManager()->getPersistorManager()
+			$this->engine->persistorManager,
+			$this->engine->facadeManager->persistorManager
 		);
 	}
 
@@ -142,16 +142,16 @@ final class EngineTest extends TestCase
 	{
 		$this->startupEngine();
 		Assert::same(
-			$this->engine->getMapperManager(),
-			$this->engine->getFacadeManager()->getMapperManager()
+			$this->engine->mapperManager,
+			$this->engine->facadeManager->mapperManager
 		);
 	}
 
-	// --- getFacadeManager před startup ---
+	// --- facadeManager před startup ---
 
-	public function testGetFacadeManagerReturnsNullBeforeStartup(): void
+	public function testFacadeManagerNullBeforeStartup(): void
 	{
-		Assert::null($this->engine->getFacadeManager());
+		Assert::null($this->engine->facadeManager);
 	}
 
 	// --- magic __get ---
@@ -165,6 +165,25 @@ final class EngineTest extends TestCase
 		);
 	}
 
+	// --- getFacadeManager (backward compat) ---
+
+	public function testGetFacadeManagerReturnsNullBeforeStartup(): void
+	{
+		Assert::null($this->engine->getFacadeManager());
+	}
+
+	public function testGetPersistorManagerAfterStartup(): void
+	{
+		$this->startupEngine();
+		Assert::type(PersistorManager::class, $this->engine->getPersistorManager());
+	}
+
+	public function testGetMapperManagerAfterStartup(): void
+	{
+		$this->startupEngine();
+		Assert::type(MapperManager::class, $this->engine->getMapperManager());
+	}
+
 	// --- createDirStructure ---
 
 	public function testCreateDirStructureCreatesAllDirectories(): void
@@ -172,7 +191,7 @@ final class EngineTest extends TestCase
 		$tmpDir = sys_get_temp_dir() . '/acidorm_test_' . uniqid();
 		mkdir($tmpDir);
 
-		$this->engine->setParameters(['appDir' => $tmpDir]);
+		$this->engine->parameters = ['appDir' => $tmpDir];
 		$this->engine->createDirStructure();
 
 		$expected = ['Data', 'Enums', 'Interfaces', 'Mappers', 'Persistors', 'Facades', 'Grids', 'Forms'];
@@ -188,9 +207,9 @@ final class EngineTest extends TestCase
 		$tmpDir = sys_get_temp_dir() . '/acidorm_test_' . uniqid();
 		mkdir($tmpDir);
 
-		$this->engine->setParameters(['appDir' => $tmpDir]);
+		$this->engine->parameters = ['appDir' => $tmpDir];
 		$this->engine->createDirStructure();
-		$this->engine->createDirStructure(); // druhé volání nesmí hodit chybu
+		$this->engine->createDirStructure();
 
 		Assert::true(is_dir($tmpDir . '/model/Data'));
 
@@ -201,8 +220,8 @@ final class EngineTest extends TestCase
 
 	private function startupEngine(): void
 	{
-		$this->engine->setDb($this->db);
-		$this->engine->setCacheProvider($this->cache);
+		$this->engine->db = $this->db;
+		$this->engine->cacheProvider = $this->cache;
 		$this->engine->startup();
 	}
 

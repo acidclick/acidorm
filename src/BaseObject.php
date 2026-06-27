@@ -7,8 +7,6 @@ use AcidORM\Attributes\Label;
 
 class BaseObject implements \JsonSerializable
 {
-	use \Nette\SmartObject;
-
 	public function jsonSerialize(): mixed
 	{
 		$data = [];
