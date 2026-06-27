@@ -422,10 +422,10 @@ $rel = new OneToOne(className: 'User', propertyName: 'userId');
 $rel->className = 'Other'; // Error: Cannot modify readonly property
 ```
 
-**Deprecated alias** — `AcidORM\AcidORM` carries `#[\Deprecated]` so PHP 8.4 emits a deprecation notice when the class is used. Use `AcidORM\Engine` instead:
+**Deprecated alias** — `AcidORM\AcidORM` triggers `E_USER_DEPRECATED` in its constructor. Use `AcidORM\Engine` instead:
 
 ```php
-// deprecated — triggers E_DEPRECATED in PHP 8.4
+// deprecated — triggers E_USER_DEPRECATED at runtime
 $engine = new AcidORM\AcidORM();
 
 // correct
