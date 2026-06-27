@@ -2,30 +2,22 @@
 
 namespace AcidORM\DB\Relationships;
 
-use Nette;
-
-/**
- * @property string $foreignKey
- * @property string $className
- */
 class OneToMany
 {
 	use \Nette\SmartObject;
 
-	private string $className;
-	private string $foreignKey;
+	public function __construct(
+		private string $className,
+		private string $foreignKey,
+	) {}
 
-	public function __construct($className, $foreignKey){
-		$this->className = $className;
-		$this->foreignKey = $foreignKey;
-	}
-
-	public function getClassName(){
+	public function getClassName(): string
+	{
 		return $this->className;
 	}
 
-	public function getPropertyName(){
+	public function getPropertyName(): string
+	{
 		return $this->foreignKey;
 	}
-	
 }

@@ -11,9 +11,9 @@
 		}
 	],
 	"require": {
-		"php": ">= 7.4.0",
-		"nette/utils": "^2.4",
-		"nette/caching": "^2.5",
+		"php": ">= 8.0.0",
+		"nette/utils": "^3.0|^4.0",
+		"nette/caching": "^3.0",
 		"dibi/dibi": "v4.2.8"
 	},
 	"require-dev": {

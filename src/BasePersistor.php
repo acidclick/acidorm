@@ -73,7 +73,7 @@ class BasePersistor
 				$this->db->insert($this->mapper->table, $array)->execute();
 				try {
 					$baseObject->id = $this->db->insertId;
-				} catch (\Exception $ex) {}
+				} catch (\Exception | \Error $ex) {}
 			} else {
 				unset($array['id']);
 				$this->db->update($this->mapper->table, $array)->where('[id] = %i', $baseObject->id)->execute();
@@ -81,11 +81,9 @@ class BasePersistor
 		} 
 
 		if($baseObject->id === null){
-			try{
-			$baseObject->id = $this->db->insertId();
-			} catch (\Exception $ex){
-				
-			}
+			try {
+				$baseObject->id = $this->db->insertId();
+			} catch (\Exception | \Error $ex) {}
 		}
 	}
 

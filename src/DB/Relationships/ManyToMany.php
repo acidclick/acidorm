@@ -2,49 +2,34 @@
 
 namespace AcidORM\DB\Relationships;
 
-use Nette;
-
-/**
- * @property string $table
- * @property string $foreignKey
- * @property string $column
- * @property string $className
- */
 class ManyToMany
 {
 	use \Nette\SmartObject;
-	
-	private string $table;
-	private string $foreignKey;
-	private string $column;
-	private string $className;
 
-	public function __construct($className, $table, $foreignKey, $column)
-	{
-		$this->className = $className;
-		$this->table = $table;
-		$this->foreignKey = $foreignKey;
-		$this->column = $column;
-	}
+	public function __construct(
+		private string $className,
+		private string $table,
+		private string $foreignKey,
+		private string $column,
+	) {}
 
-	public function getTable()
+	public function getTable(): string
 	{
 		return $this->table;
 	}
 
-	public function getForeignKey()
+	public function getForeignKey(): string
 	{
 		return $this->foreignKey;
 	}
 
-	public function getColumn()
+	public function getColumn(): string
 	{
 		return $this->column;
 	}
 
-	public function getClassName()
+	public function getClassName(): string
 	{
 		return $this->className;
 	}
-
 }

@@ -8,7 +8,7 @@ class BaseObject implements \JsonSerializable
 {
 	use \Nette\SmartObject;
 
-	public function jsonSerialize()
+	public function jsonSerialize(): mixed
 	{
 		$data = [];
 		$reflection = new \ReflectionClass($this);

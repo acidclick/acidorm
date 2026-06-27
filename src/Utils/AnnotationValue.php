@@ -4,35 +4,23 @@ namespace AcidORM\Utils;
 
 class AnnotationValue implements \ArrayAccess
 {
-	/** @var array */
-	private $data;
+	public function __construct(private array $data) {}
 
-	public function __construct(array $data)
-	{
-		$this->data = $data;
-	}
-
-	public function offsetExists($offset): bool
+	public function offsetExists(mixed $offset): bool
 	{
 		return isset($this->data[$offset]);
 	}
 
-	/**
-	 * @return mixed
-	 */
-	public function offsetGet($offset)
+	public function offsetGet(mixed $offset): mixed
 	{
 		return $this->data[$offset] ?? null;
 	}
 
-	public function offsetSet($offset, $value): void {}
+	public function offsetSet(mixed $offset, mixed $value): void {}
 
-	public function offsetUnset($offset): void {}
+	public function offsetUnset(mixed $offset): void {}
 
-	/**
-	 * @return mixed
-	 */
-	public function __get(string $name)
+	public function __get(string $name): mixed
 	{
 		return $this->data[$name] ?? null;
 	}

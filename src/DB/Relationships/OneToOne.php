@@ -2,36 +2,28 @@
 
 namespace AcidORM\DB\Relationships;
 
-use Nette;
-
-/**
- * @property string $className
- * @property string $propertyName
- * @property string $canBeNull
- */
 class OneToOne
 {
 	use \Nette\SmartObject;
-	
-	private string $className;
-	private string $propertyName;
-	private bool $canBeNull;
 
-	public function __construct($className, $propertyName, $canBeNull = false){
-		$this->className = $className;
-		$this->propertyName = $propertyName;
-		$this->canBeNull = $canBeNull;
-	}
+	public function __construct(
+		private string $className,
+		private string $propertyName,
+		private bool $canBeNull = false,
+	) {}
 
-	public function getClassName(){
+	public function getClassName(): string
+	{
 		return $this->className;
 	}
 
-	public function getPropertyName(){
+	public function getPropertyName(): string
+	{
 		return $this->propertyName;
 	}
-	
-	public function getCanBeNull(){
+
+	public function getCanBeNull(): bool
+	{
 		return $this->canBeNull;
 	}
 }

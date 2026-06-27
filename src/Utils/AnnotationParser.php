@@ -4,31 +4,20 @@ namespace AcidORM\Utils;
 
 class AnnotationParser
 {
-	/** @var array */
-	private static $cache = [];
+	private static array $cache = [];
 
-	/**
-	 * @param \ReflectionClass|\ReflectionProperty $reflector
-	 */
-	public static function hasAnnotation($reflector, string $name): bool
+	public static function hasAnnotation(\ReflectionClass|\ReflectionProperty $reflector, string $name): bool
 	{
 		return isset(self::getAll($reflector)[$name]);
 	}
 
-	/**
-	 * @param \ReflectionClass|\ReflectionProperty $reflector
-	 * @return mixed
-	 */
-	public static function getAnnotation($reflector, string $name)
+	public static function getAnnotation(\ReflectionClass|\ReflectionProperty $reflector, string $name): mixed
 	{
 		$all = self::getAll($reflector);
 		return isset($all[$name]) ? end($all[$name]) : null;
 	}
 
-	/**
-	 * @param \ReflectionClass|\ReflectionProperty $reflector
-	 */
-	private static function getAll($reflector): array
+	private static function getAll(\ReflectionClass|\ReflectionProperty $reflector): array
 	{
 		$key = self::cacheKey($reflector);
 		if (!array_key_exists($key, self::$cache)) {
@@ -37,10 +26,7 @@ class AnnotationParser
 		return self::$cache[$key];
 	}
 
-	/**
-	 * @param \ReflectionClass|\ReflectionProperty $reflector
-	 */
-	private static function cacheKey($reflector): string
+	private static function cacheKey(\ReflectionClass|\ReflectionProperty $reflector): string
 	{
 		if ($reflector instanceof \ReflectionClass) {
 			return 'c:' . $reflector->getName();
@@ -61,11 +47,11 @@ class AnnotationParser
 				continue;
 			}
 
-			$name = $m[1];
+			$name  = $m[1];
 			$value = ltrim($m[2]);
 
 			if ($value !== '' && $value[0] === '(') {
-				$inner = rtrim(substr($value, 1), " \t)");
+				$inner  = rtrim(substr($value, 1), " \t)");
 				$parsed = self::parseParams($inner);
 				if (count($parsed) === 1 && array_key_exists(0, $parsed)) {
 					$res[$name][] = $parsed[0];
@@ -97,21 +83,18 @@ class AnnotationParser
 		return $data;
 	}
 
-	/**
-	 * @return mixed
-	 */
-	private static function coerce(string $value)
+	private static function coerce(string $value): mixed
 	{
 		if ($value === '') return true;
 		if (strlen($value) >= 2 && ($value[0] === '"' || $value[0] === "'")) {
 			return stripslashes(substr($value, 1, -1));
 		}
 		if (is_numeric($value)) return $value + 0;
-		switch (strtolower($value)) {
-			case 'true':  return true;
-			case 'false': return false;
-			case 'null':  return null;
-			default:      return $value;
-		}
+		return match (strtolower($value)) {
+			'true'  => true,
+			'false' => false,
+			'null'  => null,
+			default => $value,
+		};
 	}
 }
