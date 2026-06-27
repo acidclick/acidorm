@@ -1,8 +1,10 @@
 # AcidORM
 
-A lightweight PHP ORM built on top of [dibi](https://dibiphp.com/) and [Nette](https://nette.org/), using PHPDoc annotations to define entity mappings and relationships.
+A lightweight PHP ORM built on top of [dibi](https://dibiphp.com/) and [Nette](https://nette.org/), using **PHP 8 native attributes** to define entity mappings and relationships.
 
-**Requires PHP 7.4+**
+**Requires PHP 8.4+**
+
+> **Migrating from v1.0?** See [Migration from docblock annotations](#migration-from-docblock-annotations) below.
 
 ## Installation
 
@@ -46,36 +48,41 @@ Entities live in `model/Data/` and extend `AcidORM\BaseObject`.
 namespace Model\Data;
 
 use AcidORM\BaseObject;
+use AcidORM\Attributes\Name;
+use AcidORM\Attributes\Plural;
+use AcidORM\Attributes\Label;
+use AcidORM\Attributes\DontMap;
+use AcidORM\Attributes\OneToOne;
+use AcidORM\Attributes\OneToMany;
+use AcidORM\Attributes\ManyToMany;
 
-/**
- * @name Article
- * @plural Articles
- */
+#[Name('Article')]
+#[Plural('Articles')]
 class Article extends BaseObject
 {
     public ?int    $id        = null;
 
-    /** @label Title */
+    #[Label('Title')]
     public ?string $title     = null;
 
-    /** @label Body */
+    #[Label('Body')]
     public ?string $body      = null;
 
     public ?int    $authorId  = null;
 
-    /** @label Published */
+    #[Label('Published')]
     public ?string $published = null;
 
-    /** @dontMap */
+    #[DontMap]
     public ?string $computed  = null;
 
-    /** @oneToOne(className=User, propertyName=authorId, canBeNull=true) */
+    #[OneToOne(className: 'User', propertyName: 'authorId', canBeNull: true)]
     public ?User $author = null;
 
-    /** @oneToMany(className=Comment, foreignKey=articleId) */
+    #[OneToMany(className: 'Comment', foreignKey: 'articleId')]
     public ?array $comments = null;
 
-    /** @manyToMany(className=Tag, table=article_tag, foreignKey=tagId, column=articleId) */
+    #[ManyToMany(className: 'Tag', table: 'article_tag', foreignKey: 'tagId', column: 'articleId')]
     public ?array $tags = null;
 }
 ```
@@ -192,42 +199,32 @@ $users = $facade->getUsers(10, 0, 'name', 0);
 // Second page
 $users = $facade->getUsers(10, 10, 'name', 0);
 
-// Sorted by registration date DESC
-$users = $facade->getUsers(10, 0, 'createdAt', 1);
-
 // With total count (for building a paginator)
 $total = 0;
 $users = $facade->getUsers(10, 0, 'name', 0, function (int $count) use (&$total) {
     $total = $count;
 });
-// $total now holds the total number of matching rows
 ```
 
 **Filter + pagination:**
-
-When filtering, the filter value(s) come first, followed by the same pagination arguments.
 
 ```php
 // Signature: getUsersByStatus($status, $limit, $offset, $orderBy, $direction, $countCallback)
 
 $total = 0;
 $users = $facade->getUsersByStatus(
-    'active',           // filter value
-    10,                 // limit
-    0,                  // offset
-    'name',             // order by column
-    0,                  // direction: 0 = ASC, 1 = DESC
-    function (int $count) use (&$total) {
-        $total = $count;
-    }
+    'active',
+    10,
+    0,
+    'name',
+    0,
+    function (int $count) use (&$total) { $total = $count; }
 );
 ```
 
 **Compound filter + pagination:**
 
 ```php
-// Signature: getUsersByRoleAndStatus($role, $status, $limit, $offset, $orderBy, $direction, $countCallback)
-
 $users = $facade->getUsersByRoleAndStatus('admin', 'active', 25, 0, 'email', 0);
 ```
 
@@ -235,145 +232,82 @@ $users = $facade->getUsersByRoleAndStatus('admin', 'active', 25, 0, 'email', 0);
 
 ### One-to-One
 
-The foreign key lives on the owning entity. Use `canBeNull=true` to produce a `LEFT JOIN` instead of `INNER JOIN`.
+The foreign key lives on the owning entity. Set `canBeNull: true` to produce a `LEFT JOIN` instead of `INNER JOIN`.
 
 ```php
-/** @oneToOne(className=User, propertyName=authorId, canBeNull=true) */
+#[OneToOne(className: 'User', propertyName: 'authorId', canBeNull: true)]
 public ?User $author = null;
 ```
 
 ### One-to-Many
 
 ```php
-/** @oneToMany(className=Comment, foreignKey=articleId) */
+#[OneToMany(className: 'Comment', foreignKey: 'articleId')]
 public ?array $comments = null;
 ```
 
 ### Many-to-Many
 
 ```php
-/** @manyToMany(className=Tag, table=article_tag, foreignKey=tagId, column=articleId) */
+#[ManyToMany(className: 'Tag', table: 'article_tag', foreignKey: 'tagId', column: 'articleId')]
 public ?array $tags = null;
 ```
 
 ## Optimizing Dependency Loading
 
-By default every persistor query loads **only the entity itself** — no JOINs, no extra queries. Dependencies are opt-in and come in two independent layers:
+By default every persistor query loads **only the entity itself** — no JOINs, no extra queries. Dependencies are opt-in:
 
 | Layer | Relationship type | Mechanism |
 |---|---|---|
-| `getDependencies` | `@oneToOne` | SQL JOIN added to the main query |
-| `mapDependencies` | `@oneToMany`, `@manyToMany` | Separate query per relationship after the main fetch |
+| `getDependencies` | `OneToOne` | SQL JOIN added to the main query |
+| `mapDependencies` | `OneToMany`, `ManyToMany` | Separate query per relationship after the main fetch |
 
-This separation lets you choose exactly what to load per use-case.
-
-### getDependencies — controlling JOINs (oneToOne)
-
-Every persistor query method accepts two optional parameters: `$withDependencies` (bool) and `$dependencies` (array of property names or null).
+### getDependencies — controlling JOINs (OneToOne)
 
 ```php
 $persistor = $engine->getPersistor('Article');
 
-// No JOINs — fastest, only the article row
+// No JOINs — fastest
 $article = $persistor->getById(1);
 
-// All @oneToOne JOINs (author, editor, …)
+// All OneToOne JOINs
 $article = $persistor->getById(1, true);
 
-// Only the 'author' JOIN — skip 'editor' and any other oneToOne
+// Only the 'author' JOIN
 $deps    = $persistor->getDependencies(['author']);
 $article = $persistor->getById(1, true, $deps);
 ```
 
-The same pattern works for every query method:
-
-```php
-// Selective JOIN on a list
-$deps     = $persistor->getDependencies(['author']);
-$articles = $persistor->getAll(10, 0, true, $deps);
-
-$article  = $persistor->getByProperty('slug', 'hello-world', true, $deps);
-```
-
-When `$dependencies` is `null` and `$withDependencies` is `true`, all `@oneToOne` relationships are joined.
-
-### mapDependencies — controlling collections (oneToMany / manyToMany)
-
-`BaseFacade::mapDependencies()` fires one extra query per relationship to populate collection properties. Call it after fetching the entity.
+### mapDependencies — controlling collections (OneToMany / ManyToMany)
 
 ```php
 $facade  = $engine->getFacade('Article');
 $article = $facade->getPersistor()->getById(1);
 
-// Load all collections (@oneToMany comments, @manyToMany tags)
+// Load all collections
 $facade->mapDependencies($article);
 
 // Load only comments, skip tags
 $facade->mapDependencies($article, false, ['comments']);
-
-// Load only tags
-$facade->mapDependencies($article, false, ['tags']);
 ```
-
-The second argument (`$withDependencies`) controls whether the sub-queries themselves also JOIN their own oneToOne relationships.
 
 ### Combining both layers
 
 ```php
-$persistor = $engine->getPersistor('Article');
-$facade    = $engine->getFacade('Article');
-
-// 1. Main query: JOIN only 'author', skip 'editor'
 $deps    = $persistor->getDependencies(['author']);
 $article = $persistor->getById(1, true, $deps);
 
-// 2. Collections: load only 'comments', skip 'tags'
 $facade->mapDependencies($article, false, ['comments']);
-```
-
-Generated SQL is then roughly:
-
-```sql
--- Step 1: one query with a single JOIN
-SELECT object.*, author.*
-FROM Article AS object
-LEFT JOIN User AS author ON author.id = object.authorId
-WHERE object.id = 1
-
--- Step 2: one query per requested collection
-SELECT * FROM Comment WHERE articleId = 1
-```
-
-Compare that to the default facade call `$facade->getArticleById(1)`, which would JOIN **all** oneToOne relationships and then fire **one extra query for every** `@oneToMany` and `@manyToMany` property defined on `Article`.
-
-### Fetching a list with selective dependencies
-
-```php
-$persistor = $engine->getPersistor('Article');
-$facade    = $engine->getFacade('Article');
-
-$deps     = $persistor->getDependencies(['author']);
-$articles = $persistor->getAll(20, 0, true, $deps);
-
-foreach ($articles as $article) {
-    // Populate only comments for each article
-    $facade->mapDependencies($article, false, ['comments']);
-}
 ```
 
 ## HistoryComparer
 
-`AcidORM\Utils\HistoryComparer` is a utility class for comparing two versions of an entity and producing a human-readable change summary. It is used automatically by `BaseFacade` when the facade implements `IHistoryProxy` or the entity implements `IHistoryObject`, but it can also be called directly.
-
-Only properties annotated with `@label` are compared — everything else is ignored.
+`AcidORM\Utils\HistoryComparer` compares two versions of an entity and produces a human-readable change summary. Only properties with `#[Label]` are compared.
 
 ### hasChanges
 
-Returns `true` if at least one `@label`-annotated property differs between the two objects.
-
 ```php
 $old = $persistor->getById(5);
-
 $new = clone $old;
 $new->name = 'Updated name';
 
@@ -384,83 +318,57 @@ if (HistoryComparer::hasChanges($old, $new)) {
 
 ### getChanges
 
-Returns an HTML string listing every changed property with its label and new value.
-
 ```php
 $html = HistoryComparer::getChanges($old, $new);
-// Example output:
-// <strong>Name</strong>: Updated name<br /><strong>Status</strong>: active
+// → "<strong>Name</strong>: Updated name<br />"
 ```
 
 ### getValue
 
-`getValue($value, ReflectionProperty $property): string`
+Converts a single property value to a human-readable string:
 
-Converts a single property value to a human-readable string. `hasChanges` and `getChanges` call it internally for every compared property, but you can also use it standalone.
-
-The conversion rules, in order of priority:
-
-| Value type | Result |
+| Condition | Result |
 |---|---|
-| `DateTimeInterface` | `Y-m-d H:i:s` formatted string |
-| Object with `__toString()` | Result of `(string) $value` |
-| `bool` | `'Ano'` (true) / `'Ne'` (false) |
-| Property has `@enum` annotation | `{EnumClass}::getName($value)` |
-| Property has `@formatter` annotation | `{FormatterClass}::format($value, $property[, $annotation])` |
+| `DateTimeInterface` | `Y-m-d H:i:s` |
+| Object with `__toString()` | `(string) $value` |
+| `bool` | `'Ano'` / `'Ne'` |
+| Property has `#[EnumAttr]` | `{ClassName}::getName($value)` |
+| Property has `#[Formatter]` | `{ClassName}::format($value, $property)` |
 | Anything else | `(string) $value` |
 
-**DateTime:**
+**EnumAttr:**
 
 ```php
-$property = (new ReflectionClass($article))->getProperty('publishedAt');
+use AcidORM\Attributes\EnumAttr;
 
-$value = new \DateTime('2024-06-01 12:00:00');
-echo HistoryComparer::getValue($value, $property);
-// → "2024-06-01 12:00:00"
-```
+#[Label('Status')]
+#[EnumAttr(className: StatusEnum::class)]
+public ?int $status = null;
 
-**Bool:**
-
-```php
-echo HistoryComparer::getValue(true,  $property); // → "Ano"
-echo HistoryComparer::getValue(false, $property); // → "Ne"
-```
-
-**Enum — simple string annotation:**
-
-```php
-// Entity property:
-// /** @label Status @enum StatusEnum */
-// public ?int $status = null;
-
-// Enum class must implement a static getName() method:
+// StatusEnum must implement static getName($value): string
 class StatusEnum
 {
-    const ACTIVE   = 1;
-    const INACTIVE = 0;
-
     public static function getName(int $value): string
     {
         return match ($value) {
-            self::ACTIVE   => 'Active',
-            self::INACTIVE => 'Inactive',
-            default        => (string) $value,
+            1 => 'Active',
+            0 => 'Inactive',
+            default => (string) $value,
         };
     }
 }
-
-echo HistoryComparer::getValue(1, $property);
-// → "Active"
 ```
 
-**Formatter — simple string annotation:**
-
-The class must expose a static `format($value, ReflectionProperty $property): string` method.
+**Formatter:**
 
 ```php
-// /** @label Price @formatter PriceFormatter */
-// public ?float $price = null;
+use AcidORM\Attributes\Formatter;
 
+#[Label('Price')]
+#[Formatter(className: PriceFormatter::class)]
+public ?float $price = null;
+
+// Formatter must implement static format($value, ReflectionProperty $property): string
 class PriceFormatter
 {
     public static function format($value, \ReflectionProperty $property): string
@@ -468,54 +376,109 @@ class PriceFormatter
         return number_format((float) $value, 2, ',', ' ') . ' Kč';
     }
 }
-
-echo HistoryComparer::getValue(1990.5, $property);
-// → "1 990,50 Kč"
 ```
 
-**Formatter — with annotation parameters:**
-
-When the annotation has named parameters, the full `AnnotationValue` is passed as the third argument.
+**HistoryDontMap** — excludes a property from history even when it has `#[Label]`:
 
 ```php
-// /** @label Weight @formatter(class=UnitFormatter, unit=kg, decimals=3) */
-// public ?float $weight = null;
+use AcidORM\Attributes\HistoryDontMap;
 
-class UnitFormatter
-{
-    public static function format($value, \ReflectionProperty $property, $annotation): string
-    {
-        $decimals = (int) ($annotation['decimals'] ?? 2);
-        $unit     = $annotation['unit'] ?? '';
-        return number_format((float) $value, $decimals, '.', '') . ' ' . $unit;
-    }
-}
-
-echo HistoryComparer::getValue(12.5, $property);
-// → "12.500 kg"
+#[Label('Internal note')]
+#[HistoryDontMap]
+public ?string $internalNote = null;
 ```
 
-### Annotations Reference (HistoryComparer)
+## Attributes Reference
 
-| Annotation | Target | Description |
-|---|---|---|
-| `@label <text>` | property | Marks the property for comparison; used as the field label in change output |
-| `@enum <ClassName>` | property | Class with `static getName($value): string` for human-readable enum values |
-| `@formatter <ClassName>` | property | Class with `static format($value, $property): string` |
-| `@formatter(class=X, ...)` | property | Formatter with extra parameters passed as `AnnotationValue` |
-| `@historyDontMap` | property | Excludes the property from history even when it has `@label` |
+### Property attributes
 
-## Annotations Reference
+| Attribute | Description |
+|---|---|
+| `#[Label('text')]` | Human-readable label, returned by `getLabel()` and used in history |
+| `#[DontMap]` | Excluded from `toArray()` and DB column list |
+| `#[OneToOne(className, propertyName, canBeNull)]` | Eager-loaded JOIN relationship |
+| `#[OneToMany(className, foreignKey)]` | Lazy-loaded collection resolved via facade |
+| `#[ManyToMany(className, table, foreignKey, column)]` | Lazy-loaded collection via pivot table |
+| `#[EnumAttr(className)]` | Enum class for `HistoryComparer::getValue()` |
+| `#[Formatter(className)]` | Formatter class for `HistoryComparer::getValue()` |
+| `#[HistoryDontMap]` | Excludes property from history comparison |
 
-| Annotation | Target | Description |
-|---|---|---|
-| `@label <text>` | property | Human-readable label, returned by `getLabel()` |
-| `@dontMap` | property | Excluded from `toArray()` and DB column list |
-| `@oneToOne(...)` | property | Eager-loaded JOIN relationship |
-| `@oneToMany(...)` | property | Lazy-loaded collection resolved via facade |
-| `@manyToMany(...)` | property | Lazy-loaded collection via pivot table |
-| `@name <text>` | class | Display name used in history / audit trails |
-| `@plural <text>` | class | Plural form used by facade dynamic methods |
+### Class attributes
+
+| Attribute | Description |
+|---|---|
+| `#[Name('text')]` | Display name used in history / audit trails |
+| `#[Plural('text')]` | Plural form used by facade dynamic methods |
+| `#[HistoryBinding(key: 'key')]` | History log binding key |
+
+## PHP 8.4 features
+
+v3.0 targets PHP 8.4 and takes advantage of the following features:
+
+**Readonly attribute classes** — all `AcidORM\Attributes\*` classes are declared `readonly class`. Attribute instances returned by `AttributeReader` are immutable; any attempt to assign to their properties throws an `Error`:
+
+```php
+$rel = new OneToOne(className: 'User', propertyName: 'userId');
+$rel->className = 'Other'; // Error: Cannot modify readonly property
+```
+
+**Deprecated alias** — `AcidORM\AcidORM` carries `#[\Deprecated]` so PHP 8.4 emits a deprecation notice when the class is used. Use `AcidORM\Engine` instead:
+
+```php
+// deprecated — triggers E_DEPRECATED in PHP 8.4
+$engine = new AcidORM\AcidORM();
+
+// correct
+$engine = new AcidORM\Engine();
+```
+
+**New-without-parentheses chaining** — internal code uses PHP 8.4's `new Foo->method()` syntax to chain calls on freshly created objects without extra parentheses.
+
+## Migration from docblock annotations
+
+v3.0 replaces PHPDoc annotations with PHP 8 native attributes. A migration script is included to convert existing entity files automatically.
+
+```bash
+# Preview changes without modifying files
+php migrate-to-attributes.php /path/to/model --dry-run --verbose
+
+# Apply changes in place
+php migrate-to-attributes.php /path/to/model
+```
+
+The script handles all built-in annotations and automatically adds the required `use AcidORM\Attributes\*;` imports.
+
+**Before (v1.0):**
+
+```php
+/**
+ * @name Article
+ * @plural Articles
+ */
+class Article extends BaseObject
+{
+    /** @label Title */
+    public ?string $title = null;
+
+    /** @oneToMany(className=Comment, foreignKey=articleId) */
+    public ?array $comments = null;
+}
+```
+
+**After (v3.0):**
+
+```php
+#[Name('Article')]
+#[Plural('Articles')]
+class Article extends BaseObject
+{
+    #[Label('Title')]
+    public ?string $title = null;
+
+    #[OneToMany(className: 'Comment', foreignKey: 'articleId')]
+    public ?array $comments = null;
+}
+```
 
 ## Directory Structure
 
@@ -548,9 +511,11 @@ composer install
 
 ## Compatibility
 
-| Version | PHP  |
-|---------|------|
-| v1.0.x  | 7.4+ |
+| Branch | PHP  | Annotations | Notes |
+|--------|------|-------------|-------|
+| v1.0   | 7.4+ | PHPDoc (`/** @label ... */`) | |
+| v2.0   | 8.0+ | PHP attributes (`#[Label(...)]`) | |
+| v3.0   | 8.4+ | PHP attributes (`#[Label(...)]`) | `readonly class` on attribute objects |
 
 ## License
 
