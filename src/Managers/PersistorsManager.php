@@ -6,7 +6,7 @@ use Nette;
 /**
  * @property MapperManager $mapperManager
  * @property string $namespace
- * @property \DibiConnection $db
+ * @property \Dibi\Connection $db
  * @property Nette\Caching\Cache $cache
  */
 class PersistorManager extends BaseManager

@@ -5,7 +5,7 @@ namespace AcidORM\Generators\DB;
 use Nette,
 	AcidORM\Generators;
 /**
- * @property \DibiConnection $db
+ * @property \Dibi\Connection $db
  * @property string $appDir
  */
 class Mysql extends BaseDatabase implements Generators\IDatabaseFirst

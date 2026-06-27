@@ -6,7 +6,7 @@ use Nette;
 use AcidORM\Utils\AnnotationParser;
 
 /**
- * @property \DibiConnection $db
+ * @property \Dibi\Connection $db
  * @property BaseObject $object
  * @property BaseMapper $mapper
  * @property string $table

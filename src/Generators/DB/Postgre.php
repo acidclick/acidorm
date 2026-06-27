@@ -6,7 +6,7 @@ use Nette,
 	AcidORM\Generators;
 
 /**
- * @property \DibiConnection $db
+ * @property \Dibi\Connection $db
  * @property string $appDir
  */
 class Postgre extends BaseDatabase implements Generators\IDatabaseFirst

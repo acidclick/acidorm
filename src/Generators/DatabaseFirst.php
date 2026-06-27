@@ -6,7 +6,7 @@ use Nette;
 use AcidORM\Generators\DB\BaseDatabase;
 
 /**
- * @property \DibiConnection $db
+ * @property \Dibi\Connection $db
  * @property string $databaseDriver
  * @property BaseDatabase $adapter
  * @property string $appDir
