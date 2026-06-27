@@ -2,9 +2,9 @@
 
 namespace AcidORM\Utils;
 
-use Nette,
-	AcidORM\Managers,
-	AcidORM\Interfaces\IHistoryProxy;
+use AcidORM\Managers;
+use AcidORM\Interfaces\IHistoryProxy;
+use AcidORM\Utils\AnnotationParser;
 
 class HistoryComparer
 {
@@ -13,9 +13,9 @@ class HistoryComparer
 	public static function hasChanges($objectOld, $objectNew)
 	{
 		$changes = false;
-		$reflection = Nette\Reflection\ClassType::from($objectNew);
+		$reflection = new \ReflectionClass($objectNew);
 		foreach($reflection->getProperties() as $property){
-			if($property->hasAnnotation('label')){
+			if(AnnotationParser::hasAnnotation($property, 'label')){
 				if(is_array($objectNew->{$property->name})){
 					$tmp1 = $objectNew->{$property->name};
 					$tmp2 = $objectOld->{$property->name};
@@ -44,9 +44,9 @@ class HistoryComparer
 		Nette\Diagnostics\Debugger::dump($objectNew);
 		exit;*/
 		$changes = '';
-		$reflection = Nette\Reflection\ClassType::from($objectNew);
+		$reflection = new \ReflectionClass($objectNew);
 		foreach($reflection->getProperties() as $property){
-			if($property->hasAnnotation('label')){
+			if(AnnotationParser::hasAnnotation($property, 'label')){
 				if(is_array($objectNew->{$property->name})){
 					$tmp1 = $objectNew->{$property->name};
 					$tmp2 = $objectOld->{$property->name};
@@ -57,38 +57,38 @@ class HistoryComparer
 							$old = '';
 						}
 						$new = self::getValue($tmp, $property);
-						if($old !== $new) $changes .= ($changes === '' ? '' : '<br />') . sprintf('<strong>%s</strong>: %s', $property->getAnnotation('label'), $new);
+						if($old !== $new) $changes .= ($changes === '' ? '' : '<br />') . sprintf('<strong>%s</strong>: %s', AnnotationParser::getAnnotation($property, 'label'), $new);
 					}
 				} else {
 					$new = self::getValue($objectNew->{$property->name}, $property);
-					$old = self::getValue($objectOld->{$property->name}, $property);					
-					if($old !== $new) $changes .= ($changes === '' ? '' : '<br />') . sprintf('<strong>%s</strong>: %s', $property->getAnnotation('label'), $new);
+					$old = self::getValue($objectOld->{$property->name}, $property);
+					if($old !== $new) $changes .= ($changes === '' ? '' : '<br />') . sprintf('<strong>%s</strong>: %s', AnnotationParser::getAnnotation($property, 'label'), $new);
 				}
 			}
 		}
 		return $changes;
 	}
 
-	public static function getValue($property, $reflection)
+	public static function getValue($value, \ReflectionProperty $property)
 	{
-		if($property instanceof Nette\Object){
-			$value = $property->__toString();
-		} else if($property instanceof \DateTimeInterface){
-			$value = $property->format('Y-m-d H:i:s');
-		} else if(is_bool($property)){
-			$value = $property === true ? 'Ano' : 'Ne';
-		} else if($reflection->hasAnnotation('enum')){
-			$value = call_user_func($reflection->getAnnotation('enum') . '::getName', $property);
-		} else if($reflection->hasAnnotation('formatter')){
-			$annotation = $reflection->getAnnotation('formatter');
+		if(is_object($value) && method_exists($value, '__toString') && !($value instanceof \DateTimeInterface)){
+			$result = (string) $value;
+		} else if($value instanceof \DateTimeInterface){
+			$result = $value->format('Y-m-d H:i:s');
+		} else if(is_bool($value)){
+			$result = $value === true ? 'Ano' : 'Ne';
+		} else if(AnnotationParser::hasAnnotation($property, 'enum')){
+			$result = call_user_func(AnnotationParser::getAnnotation($property, 'enum') . '::getName', $value);
+		} else if(AnnotationParser::hasAnnotation($property, 'formatter')){
+			$annotation = AnnotationParser::getAnnotation($property, 'formatter');
 			if(is_string($annotation)){
-				$value = call_user_func($annotation . '::format', $property, $reflection);
+				$result = call_user_func($annotation . '::format', $value, $property);
 			} else {
-				$value = call_user_func($annotation->class . '::format', $property, $reflection, $annotation);
+				$result = call_user_func($annotation->class . '::format', $value, $property, $annotation);
 			}
 		} else {
-			$value = (string)$property;
-		}	
-		return $value;	
+			$result = (string) $value;
+		}
+		return $result;
 	}	
 }

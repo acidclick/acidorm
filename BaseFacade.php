@@ -4,6 +4,7 @@ namespace AcidORM;
 
 use Nette;
 use AcidORM\Managers;
+use AcidORM\Utils\AnnotationParser;
 use AcidORM\Interfaces\IHistoryProxy;
 use AcidORM\Interfaces\IHistoryObject;
 use AcidORM\Traits\HistoryObject;
@@ -34,8 +35,8 @@ class BaseFacade
 	protected $parameters;
 
 	public function __construct(){
-		$reflection = Nette\Reflection\ClassType::from($this);
-		if(preg_match('/\\\([a-zA-Z0-9]+)Facade$/', $reflection->name, $regs)){
+		$reflection = new \ReflectionClass($this);
+		if(preg_match('/\\\([a-zA-Z0-9]+)Facade$/', $reflection->getName(), $regs)){
 			$this->name = $regs[1];
 		}	
 	}
@@ -169,8 +170,8 @@ class BaseFacade
 	{
 		if($class === $this->name) return false;
 
-		$reflection = new Nette\Reflection\ClassType('Model\\Data\\' . $this->name);
-		$plural = $reflection->getAnnotation('plural');
+		$reflection = new \ReflectionClass('Model\\Data\\' . $this->name);
+		$plural = AnnotationParser::getAnnotation($reflection, 'plural');
 
 		return $class === $this->name . 's' || $plural === $class;
 	}
@@ -296,15 +297,15 @@ class BaseFacade
 			}
 			$newObject = $this->simpleGetBy($class, 'Id', [$object->id]);
 			if($newObject === null) return;
-			$reflection = Nette\Reflection\ClassType::from($newObject);
+			$reflection = new \ReflectionClass($newObject);
 			foreach($reflection->getProperties() as $property){
-				if($property->hasAnnotation('label') && $property->hasAnnotation('historyDontMap')) $oldObject->{$property->name} = $object->{$property->name};
+				if(AnnotationParser::hasAnnotation($property, 'label') && AnnotationParser::hasAnnotation($property, 'historyDontMap')) $oldObject->{$property->name} = $object->{$property->name};
 			}
-			
+
 			if(Utils\HistoryComparer::hasChanges($oldObject, $newObject)){
 				$history = new \Model\Data\History;
-				if($reflection->hasAnnotation('historyBinding')){
-					$objectKey = $reflection->getAnnotation('historyBinding');
+				if(AnnotationParser::hasAnnotation($reflection, 'historyBinding')){
+					$objectKey = AnnotationParser::getAnnotation($reflection, 'historyBinding');
 					$objectId = $object->$objectKey;
 				} else {
 					$objectKey = Nette\Utils\Strings::lower(Nette\Utils\Strings::substring($this->name, 0, 1)) . Nette\Utils\Strings::substring($this->name, 1) . 'Id';
@@ -315,13 +316,13 @@ class BaseFacade
 				$history->userId = $userId;
 				$history->created = date('Y-m-d H:i:s');
 				$changes = Utils\HistoryComparer::getChanges($oldObject, $newObject);
-				if($reflection->hasAnnotation('historyBinding') && $reflection->hasAnnotation('name')){
-					$changes = sprintf('<strong style="font-size:120%%;">%s</strong><br />%s',  $reflection->getAnnotation('name'), $changes);
+				if(AnnotationParser::hasAnnotation($reflection, 'historyBinding') && AnnotationParser::hasAnnotation($reflection, 'name')){
+					$changes = sprintf('<strong style="font-size:120%%;">%s</strong><br />%s', AnnotationParser::getAnnotation($reflection, 'name'), $changes);
 				}
 				if($callback !== null) $changes = $callback($changes);
 				$history->changes = $changes;
 				$this->facadeManager->historyFacade->insertUpdateHistory($history);
-			}			
+			}
 		} else if($object instanceof IHistoryObject){
 			if($new){
 				$namespacedClass = sprintf('Model\\Data\\%s', $class);
@@ -329,9 +330,9 @@ class BaseFacade
 			}
 			$newObject = $this->simpleGetBy($class, 'Id', [$object->id]);
 			if($newObject === null) return;
-			$reflection = Nette\Reflection\ClassType::from($newObject);
+			$reflection = new \ReflectionClass($newObject);
 			foreach($reflection->getProperties() as $property){
-				if($property->hasAnnotation('label') && $property->hasAnnotation('historyDontMap')) $oldObject->{$property->name} = $object->{$property->name};
+				if(AnnotationParser::hasAnnotation($property, 'label') && AnnotationParser::hasAnnotation($property, 'historyDontMap')) $oldObject->{$property->name} = $object->{$property->name};
 			}
 			if(Utils\HistoryComparer::hasChanges($oldObject, $newObject)){
 				$reflect = new \ReflectionClass($object);

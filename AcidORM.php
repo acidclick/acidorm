@@ -11,7 +11,7 @@ use Nette,
  * @property Managers\GridManager $gridManager
  * @property Managers\FacadeManager $facadeManager
  * @property \Dibi\Connection $db
- * @property Nette\Caching\Cache
+ * @property Nette\Caching\Cache $cacheProvider
  * @property array $parameters
  * @property array $generators
  */

@@ -2,16 +2,16 @@
 
 namespace AcidORM;
 
-use Nette;
+use AcidORM\Utils\AnnotationParser;
 
 class BaseObject implements \JsonSerializable
 {
 	use \Nette\SmartObject;
-	
+
 	public function jsonSerialize()
 	{
 		$data = [];
-		$reflection = Nette\Reflection\ClassType::from($this);
+		$reflection = new \ReflectionClass($this);
 		foreach($reflection->getProperties() as $property){
 			$data[$property->name] = $this->{$property->name};
 		}
@@ -24,8 +24,9 @@ class BaseObject implements \JsonSerializable
 			return $this->label;
 		} else if($name !== null){
 			if(property_exists($this, $name)){
-				if(Nette\Reflection\ClassType::from($this)->getProperty($name)->hasAnnotation('label')){
-					return Nette\Reflection\ClassType::from($this)->getProperty($name)->getAnnotation('label');
+				$property = (new \ReflectionClass($this))->getProperty($name);
+				if(AnnotationParser::hasAnnotation($property, 'label')){
+					return AnnotationParser::getAnnotation($property, 'label');
 				}
 			}
 		}

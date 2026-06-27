@@ -3,6 +3,7 @@
 namespace AcidORM;
 
 use Nette;
+use AcidORM\Utils\AnnotationParser;
 
 /**
  * @property \DibiConnection $db
@@ -28,8 +29,8 @@ class BasePersistor
 	public function __construct($db, $mapperManager){
 		$this->db = $db;
 		$this->mapperManager = $mapperManager;
-		$reflection = Nette\Reflection\ClassType::from($this);
-		if(preg_match('/\\\([a-zA-Z0-9]+)Persistor$/', $reflection->name, $regs)){
+		$reflection = new \ReflectionClass($this);
+		if(preg_match('/\\\([a-zA-Z0-9]+)Persistor$/', $reflection->getName(), $regs)){
 			$class = 'Model\\Data\\'.$regs[1];
 			$this->object = new $class;
 			$this->table = $regs[1];
@@ -240,10 +241,10 @@ class BasePersistor
 
 		$data  = [];
 		foreach ($dependencies as $propertyName) {
-			$reflection = Nette\Reflection\ClassType::from($this->object);
+			$reflection = new \ReflectionClass($this->object);
 			$property = $reflection->getProperty($propertyName);
-			if($property->hasAnnotation('oneToOne')){
-				$annotation = $property->getAnnotation('oneToOne');
+			if(AnnotationParser::hasAnnotation($property, 'oneToOne')){
+				$annotation = AnnotationParser::getAnnotation($property, 'oneToOne');
 				$data[$propertyName] = new DB\Relationships\OneToOne(
 					$annotation['className'], 
 					$annotation['propertyName'], 
