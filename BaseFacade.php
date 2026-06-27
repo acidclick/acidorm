@@ -22,17 +22,17 @@ class BaseFacade
 {
 	use \Nette\SmartObject;
 	
-	protected $name;
+	protected ?string $name = null;
 
-	protected $persistorManager;
+	protected ?Managers\PersistorManager $persistorManager = null;
 
-	protected $mapperManager;
+	protected ?Managers\MapperManager $mapperManager = null;
 
-	private $cache;
+	private ?Nette\Caching\Cache $cache = null;
 
-	protected $facadeManager;
+	protected ?Managers\FacadeManager $facadeManager = null;
 
-	protected $parameters;
+	protected ?array $parameters = null;
 
 	public function __construct(){
 		$reflection = new \ReflectionClass($this);

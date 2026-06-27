@@ -12,8 +12,8 @@ class OneToMany
 {
 	use \Nette\SmartObject;
 
-	private $className;
-	private $foreignKey;
+	private string $className;
+	private string $foreignKey;
 
 	public function __construct($className, $foreignKey){
 		$this->className = $className;

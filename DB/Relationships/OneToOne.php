@@ -13,9 +13,9 @@ class OneToOne
 {
 	use \Nette\SmartObject;
 	
-	private $className;
-	private $propertyName;
-	private $canBeNull;
+	private string $className;
+	private string $propertyName;
+	private bool $canBeNull;
 
 	public function __construct($className, $propertyName, $canBeNull = false){
 		$this->className = $className;

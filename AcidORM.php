@@ -19,17 +19,17 @@ use Nette,
 class AcidORM
 {
 	use \Nette\SmartObject;
-	private $persistorManager;
-	private $mapperManager;
-	private $gridManager;
-	private $facadeManager;
+	private ?Managers\PersistorManager $persistorManager = null;
+	private ?Managers\MapperManager $mapperManager = null;
+	private ?Managers\GridManager $gridManager = null;
+	private ?Managers\FacadeManager $facadeManager = null;
 
-	private $db;
-	private $cacheProvider;
+	private ?\Dibi\Connection $db = null;
+	private ?Nette\Caching\Cache $cacheProvider = null;
 
-	private $parameters = [];
+	private array $parameters = [];
 
-	private $generators = [];
+	private array $generators = [];
 
 	public function setDb(\Dibi\Connection $db)
 	{

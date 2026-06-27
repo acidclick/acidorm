@@ -10,7 +10,7 @@ class BaseManager
 {
 	use \Nette\SmartObject;
 	
-	protected $data;
+	protected array $data = [];
 
 	protected function getData(){
 		return $this->data;

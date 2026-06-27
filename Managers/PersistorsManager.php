@@ -12,13 +12,13 @@ use Nette;
 class PersistorManager extends BaseManager
 {
 
-	protected $namespace = 'Model\\Persistors\\';
+	protected string $namespace = 'Model\\Persistors\\';
 
-	protected $mapperManager;
+	protected ?MapperManager $mapperManager = null;
 
-	protected $db;
+	protected ?\Dibi\Connection $db = null;
 
-	protected $cache;
+	protected ?Nette\Caching\Cache $cache = null;
 
 	public function getPersistor($name){
 		$className = $this->namespace . $name . 'Persistor';

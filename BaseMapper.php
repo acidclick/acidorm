@@ -15,14 +15,14 @@ use AcidORM\Utils\AnnotationParser;
 class BaseMapper
 {
 	use \Nette\SmartObject;
-	private $namespace = 'Model\\Data\\';
+	private string $namespace = 'Model\\Data\\';
 
-	private $object;
+	private ?BaseObject $object = null;
 
-	private $table;
-	private $oneToOneRelations;
-	private $manyToManyRelations;
-	private $oneToManyRelations;
+	private ?string $table = null;
+	private ?array $oneToOneRelations = null;
+	private ?array $manyToManyRelations = null;
+	private ?array $oneToManyRelations = null;
 
 	public function __construct(){
 		$reflection = new \ReflectionClass($this);

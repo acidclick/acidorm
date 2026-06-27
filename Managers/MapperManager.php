@@ -9,7 +9,7 @@ use Nette;
 class MapperManager extends BaseManager
 {
 
-	protected $namespace = 'Model\\Mappers\\';
+	protected string $namespace = 'Model\\Mappers\\';
 
 	public function getMapper($name){
 		$className = $this->namespace . $name . 'Mapper';

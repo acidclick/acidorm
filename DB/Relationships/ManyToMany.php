@@ -14,10 +14,10 @@ class ManyToMany
 {
 	use \Nette\SmartObject;
 	
-	private $table;
-	private $foreignKey;
-	private $column;
-	private $className;
+	private string $table;
+	private string $foreignKey;
+	private string $column;
+	private string $className;
 
 	public function __construct($className, $table, $foreignKey, $column)
 	{

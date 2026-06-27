@@ -14,15 +14,15 @@ class FacadeManager extends BaseManager
 {
 	use \Nette\SmartObject;
 	
-	protected $namespace = 'Model\\Facades\\';
+	protected string $namespace = 'Model\\Facades\\';
 
-	protected $persistorManager;
+	protected ?PersistorManager $persistorManager = null;
 
-	protected $mapperManager;
+	protected ?MapperManager $mapperManager = null;
 
-	protected $cache;
+	protected ?Nette\Caching\Cache $cache = null;
 
-	public $parameters;
+	public ?array $parameters = null;
 
 	public function getFacade($name)
 	{

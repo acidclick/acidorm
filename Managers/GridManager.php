@@ -10,9 +10,9 @@ use Nette;
 class GridManager extends BaseManager
 {
 
-	protected $namespace = 'Model\\Grids\\';
+	protected string $namespace = 'Model\\Grids\\';
 
-	protected $db;
+	protected ?\Dibi\Connection $db = null;
 
 	public function getGrid($name){
 		$className = $this->namespace . $name . 'Grid';

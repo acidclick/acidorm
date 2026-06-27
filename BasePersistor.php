@@ -17,14 +17,14 @@ class BasePersistor
 {
 
 	use \Nette\SmartObject;
-	private $db;
-	private $object;
-	private $mapper;
-	private $table;
+	private ?\Dibi\Connection $db = null;
+	private ?BaseObject $object = null;
+	private ?BaseMapper $mapper = null;
+	private ?string $table = null;
 
-	private $mapperManager;	
+	private ?Managers\MapperManager $mapperManager = null;
 
-	private $cache;
+	private ?Nette\Caching\Cache $cache = null;
 
 	public function __construct($db, $mapperManager){
 		$this->db = $db;
