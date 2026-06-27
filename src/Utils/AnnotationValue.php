@@ -2,7 +2,7 @@
 
 namespace AcidORM\Utils;
 
-class AnnotationValue implements \ArrayAccess
+readonly class AnnotationValue implements \ArrayAccess
 {
 	public function __construct(private array $data) {}
 
@@ -16,9 +16,9 @@ class AnnotationValue implements \ArrayAccess
 		return $this->data[$offset] ?? null;
 	}
 
-	public function offsetSet(mixed $offset, mixed $value): void {}
+	public function offsetSet(mixed $_offset, mixed $_value): void {}
 
-	public function offsetUnset(mixed $offset): void {}
+	public function offsetUnset(mixed $_offset): void {}
 
 	public function __get(string $name): mixed
 	{

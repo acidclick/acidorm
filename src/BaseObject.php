@@ -11,8 +11,7 @@ class BaseObject implements \JsonSerializable
 	public function jsonSerialize(): mixed
 	{
 		$data = [];
-		$reflection = new \ReflectionClass($this);
-		foreach($reflection->getProperties() as $property){
+		foreach (new \ReflectionClass($this)->getProperties() as $property) {
 			$data[$property->name] = $this->{$property->name};
 		}
 		return $data;

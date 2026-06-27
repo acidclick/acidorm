@@ -2,15 +2,13 @@
 
 namespace AcidORM\DB\Relationships;
 
-class ManyToMany
+readonly class ManyToMany
 {
-	use \Nette\SmartObject;
-
 	public function __construct(
-		private string $className,
-		private string $table,
-		private string $foreignKey,
-		private string $column,
+		public string $className,
+		public string $table,
+		public string $foreignKey,
+		public string $column,
 	) {}
 
 	public function getTable(): string

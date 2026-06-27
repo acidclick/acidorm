@@ -2,14 +2,12 @@
 
 namespace AcidORM\DB\Relationships;
 
-class OneToOne
+readonly class OneToOne
 {
-	use \Nette\SmartObject;
-
 	public function __construct(
-		private string $className,
-		private string $propertyName,
-		private bool $canBeNull = false,
+		public string $className,
+		public string $propertyName,
+		public bool $canBeNull = false,
 	) {}
 
 	public function getClassName(): string
