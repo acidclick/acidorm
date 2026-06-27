@@ -256,6 +256,111 @@ public ?array $comments = null;
 public ?array $tags = null;
 ```
 
+## Optimizing Dependency Loading
+
+By default every persistor query loads **only the entity itself** — no JOINs, no extra queries. Dependencies are opt-in and come in two independent layers:
+
+| Layer | Relationship type | Mechanism |
+|---|---|---|
+| `getDependencies` | `@oneToOne` | SQL JOIN added to the main query |
+| `mapDependencies` | `@oneToMany`, `@manyToMany` | Separate query per relationship after the main fetch |
+
+This separation lets you choose exactly what to load per use-case.
+
+### getDependencies — controlling JOINs (oneToOne)
+
+Every persistor query method accepts two optional parameters: `$withDependencies` (bool) and `$dependencies` (array of property names or null).
+
+```php
+$persistor = $engine->getPersistor('Article');
+
+// No JOINs — fastest, only the article row
+$article = $persistor->getById(1);
+
+// All @oneToOne JOINs (author, editor, …)
+$article = $persistor->getById(1, true);
+
+// Only the 'author' JOIN — skip 'editor' and any other oneToOne
+$deps    = $persistor->getDependencies(['author']);
+$article = $persistor->getById(1, true, $deps);
+```
+
+The same pattern works for every query method:
+
+```php
+// Selective JOIN on a list
+$deps     = $persistor->getDependencies(['author']);
+$articles = $persistor->getAll(10, 0, true, $deps);
+
+$article  = $persistor->getByProperty('slug', 'hello-world', true, $deps);
+```
+
+When `$dependencies` is `null` and `$withDependencies` is `true`, all `@oneToOne` relationships are joined.
+
+### mapDependencies — controlling collections (oneToMany / manyToMany)
+
+`BaseFacade::mapDependencies()` fires one extra query per relationship to populate collection properties. Call it after fetching the entity.
+
+```php
+$facade  = $engine->getFacade('Article');
+$article = $facade->getPersistor()->getById(1);
+
+// Load all collections (@oneToMany comments, @manyToMany tags)
+$facade->mapDependencies($article);
+
+// Load only comments, skip tags
+$facade->mapDependencies($article, false, ['comments']);
+
+// Load only tags
+$facade->mapDependencies($article, false, ['tags']);
+```
+
+The second argument (`$withDependencies`) controls whether the sub-queries themselves also JOIN their own oneToOne relationships.
+
+### Combining both layers
+
+```php
+$persistor = $engine->getPersistor('Article');
+$facade    = $engine->getFacade('Article');
+
+// 1. Main query: JOIN only 'author', skip 'editor'
+$deps    = $persistor->getDependencies(['author']);
+$article = $persistor->getById(1, true, $deps);
+
+// 2. Collections: load only 'comments', skip 'tags'
+$facade->mapDependencies($article, false, ['comments']);
+```
+
+Generated SQL is then roughly:
+
+```sql
+-- Step 1: one query with a single JOIN
+SELECT object.*, author.*
+FROM Article AS object
+LEFT JOIN User AS author ON author.id = object.authorId
+WHERE object.id = 1
+
+-- Step 2: one query per requested collection
+SELECT * FROM Comment WHERE articleId = 1
+```
+
+Compare that to the default facade call `$facade->getArticleById(1)`, which would JOIN **all** oneToOne relationships and then fire **one extra query for every** `@oneToMany` and `@manyToMany` property defined on `Article`.
+
+### Fetching a list with selective dependencies
+
+```php
+$persistor = $engine->getPersistor('Article');
+$facade    = $engine->getFacade('Article');
+
+$deps     = $persistor->getDependencies(['author']);
+$articles = $persistor->getAll(20, 0, true, $deps);
+
+foreach ($articles as $article) {
+    // Populate only comments for each article
+    $facade->mapDependencies($article, false, ['comments']);
+}
+```
+
 ## HistoryComparer
 
 `AcidORM\Utils\HistoryComparer` is a utility class for comparing two versions of an entity and producing a human-readable change summary. It is used automatically by `BaseFacade` when the facade implements `IHistoryProxy` or the entity implements `IHistoryObject`, but it can also be called directly.
