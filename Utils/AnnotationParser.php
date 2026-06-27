@@ -4,20 +4,31 @@ namespace AcidORM\Utils;
 
 class AnnotationParser
 {
-	private static array $cache = [];
+	/** @var array */
+	private static $cache = [];
 
-	public static function hasAnnotation(\ReflectionClass|\ReflectionProperty $reflector, string $name): bool
+	/**
+	 * @param \ReflectionClass|\ReflectionProperty $reflector
+	 */
+	public static function hasAnnotation($reflector, string $name): bool
 	{
 		return isset(self::getAll($reflector)[$name]);
 	}
 
-	public static function getAnnotation(\ReflectionClass|\ReflectionProperty $reflector, string $name): mixed
+	/**
+	 * @param \ReflectionClass|\ReflectionProperty $reflector
+	 * @return mixed
+	 */
+	public static function getAnnotation($reflector, string $name)
 	{
 		$all = self::getAll($reflector);
 		return isset($all[$name]) ? end($all[$name]) : null;
 	}
 
-	private static function getAll(\ReflectionClass|\ReflectionProperty $reflector): array
+	/**
+	 * @param \ReflectionClass|\ReflectionProperty $reflector
+	 */
+	private static function getAll($reflector): array
 	{
 		$key = self::cacheKey($reflector);
 		if (!array_key_exists($key, self::$cache)) {
@@ -26,7 +37,10 @@ class AnnotationParser
 		return self::$cache[$key];
 	}
 
-	private static function cacheKey(\ReflectionClass|\ReflectionProperty $reflector): string
+	/**
+	 * @param \ReflectionClass|\ReflectionProperty $reflector
+	 */
+	private static function cacheKey($reflector): string
 	{
 		if ($reflector instanceof \ReflectionClass) {
 			return 'c:' . $reflector->getName();
@@ -83,18 +97,21 @@ class AnnotationParser
 		return $data;
 	}
 
-	private static function coerce(string $value): mixed
+	/**
+	 * @return mixed
+	 */
+	private static function coerce(string $value)
 	{
 		if ($value === '') return true;
 		if (strlen($value) >= 2 && ($value[0] === '"' || $value[0] === "'")) {
 			return stripslashes(substr($value, 1, -1));
 		}
 		if (is_numeric($value)) return $value + 0;
-		return match (strtolower($value)) {
-			'true'  => true,
-			'false' => false,
-			'null'  => null,
-			default => $value,
-		};
+		switch (strtolower($value)) {
+			case 'true':  return true;
+			case 'false': return false;
+			case 'null':  return null;
+			default:      return $value;
+		}
 	}
 }
