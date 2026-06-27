@@ -4,9 +4,9 @@ namespace AcidORM\DB;
 
 class Result
 {
-	private array|false|null $result;
+	private mixed $result;
 
-	public function __construct(array|false|null $result)
+	public function __construct(mixed $result)
 	{
 		$this->result = $result;
 	}
