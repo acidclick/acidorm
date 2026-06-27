@@ -38,7 +38,7 @@ class BaseFacade
 		return $this->persistor;
 	}
 
-	public function mapDependencies(BaseObject &$baseObject = null, $withDependencies = false, $dependencies = null): void
+	public function mapDependencies(?BaseObject &$baseObject = null, $dependencies = null): void
 	{
 		if ($baseObject === null) return;
 
