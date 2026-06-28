@@ -41,7 +41,7 @@ class BaseFacade
 	public function mapDependencies(?BaseObject &$baseObject = null, $dependencies = null): void
 	{
 		if ($baseObject === null) return;
-		if(!is_array($dependencies)) $dependencies = [];
+		if($dependencies !== null && !is_array($dependencies)) $dependencies = [];
 
 		foreach ($this->mapperManager->getMapper($this->name)->getOneToManyRelationships() as $propertyName => $oneToMany) {
 			if ($dependencies === null || in_array($propertyName, $dependencies)) {
