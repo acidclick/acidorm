@@ -6,6 +6,14 @@ use Nette;
 use AcidORM\Utils\AttributeReader;
 use AcidORM\Attributes;
 
+/**
+ * @property \Dibi\Connection $db
+ * @property-read BaseObject $object
+ * @property-read BaseMapper $mapper
+ * @property-read string|null $table
+ * @property-read Managers\MapperManager $mapperManager
+ * @property Nette\Caching\Cache $cache
+ */
 class BasePersistor
 {
 	use \Nette\SmartObject;

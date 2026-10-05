@@ -10,6 +10,15 @@ use AcidORM\Interfaces\IHistoryProxy;
 use AcidORM\Interfaces\IHistoryObject;
 use AcidORM\Traits\HistoryObject;
 
+/**
+ * @property-read string $name
+ * @property-write Managers\PersistorManager $persistorManager
+ * @property-write Managers\MapperManager $mapperManager
+ * @property Nette\Caching\Cache $cache
+ * @property-write Managers\FacadeManager $facadeManager
+ * @property-write array $parameters
+ * @property-read BasePersistor $persistor
+ */
 class BaseFacade
 {
 	use \Nette\SmartObject;
@@ -41,7 +50,7 @@ class BaseFacade
 		$this->mapperManager = $mapperManager;
 	}
 
-	public function mapDependencies(BaseObject &$baseObject = null, $withDependencies = false, $dependencies = null): void
+	public function mapDependencies(?BaseObject &$baseObject = null, $withDependencies = false, $dependencies = null): void
 	{
 		if ($baseObject === null) return;
 

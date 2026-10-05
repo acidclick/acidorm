@@ -29,11 +29,14 @@ class FacadeManager extends BaseManager
 		$className = $this->namespace . $name . 'Facade';
 		if(!isset($this->data[$className])){
 			$facade = $this->data[$className] = new $className;
-			$facade->persistorManager = $this->persistorManager;
-			$facade->mapperManager = $this->mapperManager;
-			$facade->cache = $this->cache;
-			$facade->facadeManager = $this;
-			$facade->parameters = $this->parameters;
+			$facade->setPersistorManager($this->persistorManager);
+			$facade->setMapperManager($this->mapperManager);
+			if ($this->cache !== null) {
+				$facade->setCache($this->cache);
+			}
+			$facadeManager = $this;
+			$facade->setFacadeManager($facadeManager);
+			$facade->setParameters($this->parameters);
 			$facade->startup();
 		}
 		return $this->data[$className];

@@ -5,6 +5,9 @@ namespace AcidORM;
 use AcidORM\Utils\AttributeReader;
 use AcidORM\Attributes;
 
+/**
+ * @property-read string $table
+ */
 class BaseMapper
 {
 	use \Nette\SmartObject;
