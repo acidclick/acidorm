@@ -138,6 +138,12 @@ class Engine
     	$this->facadeManager->addEntityListener($listener);
     }
 
+    /** Aktuální uživatel pro ukládání s userId 0 (dříve pevně \Model\Utils\Helpers::$userId); volat po startup(). */
+    public function setDefaultUserIdProvider(?callable $provider): void
+    {
+    	$this->facadeManager->setDefaultUserIdProvider($provider);
+    }
+
     public function getFacadeManager()
     {
     	return $this->facadeManager;

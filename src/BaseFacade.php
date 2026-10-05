@@ -6,9 +6,6 @@ use Nette;
 use AcidORM\Managers;
 use AcidORM\Utils\AttributeReader;
 use AcidORM\Attributes;
-use AcidORM\Interfaces\IHistoryProxy;
-use AcidORM\Interfaces\IHistoryObject;
-use AcidORM\Traits\HistoryObject;
 
 /**
  * @property-read string $name
@@ -265,110 +262,36 @@ class BaseFacade
 
 	private function resolveUserId($userId): ?int
 	{
-		if ((int)$userId === 0 && preg_match('/^[\d]+$/', (string) $userId) && class_exists(\Model\Utils\Helpers::class)) $userId = \Model\Utils\Helpers::$userId;
+		if ((int)$userId === 0 && preg_match('/^[\d]+$/', (string) $userId) && $this->facadeManager !== null) {
+			$userId = $this->facadeManager->getDefaultUserId();
+		}
 		return $userId === null || $userId === '' ? null : (int) $userId;
 	}
 
-	private function simpleInsertUpdate($class, $object, $userId = null, $callback = null): void
+	private function simpleInsertUpdate($class, $object, $userId = null): void
 	{
 		$this->isCallable($class);
 
-		if ((int)$userId === 0 && preg_match('/^[\d]+$/', (string) $userId)) $userId = \Model\Utils\Helpers::$userId;
 		$new = $object->id === null;
 		$listeners = $this->facadeManager !== null ? $this->facadeManager->getEntityListeners($object) : [];
-		// vestavěná historie (History/History2) jen pokud entitu neobsluhuje žádný posluchač
-		$legacyHistory = $listeners === [] && ($this instanceof IHistoryProxy || $object instanceof IHistoryObject);
-		$oldObject = null;
-		if (!$new && ($listeners !== [] || $legacyHistory)) {
-			$oldObject = $this->simpleGetBy($class, 'Id', [$object->id]);
-		}
-		if ($object instanceof IHistoryObject && empty($object->key)) {
-			// jedinečnost klíče v tabulce entity (dříve se kontrolovala tabulka History2)
-			$table = $this->persistor->getTable();
-			do {
-				$object->key = method_exists($object, 'generateUniqueId') ? $object::generateUniqueId() : uniqid();
-				$exists = $this->persistorManager->getDb()->select('id')->from('%n', $table)->where('[key] = %s', $object->key)->fetch() !== null;
-			} while ($exists);
-		}
+		$oldObject = !$new && $listeners !== [] ? $this->simpleGetBy($class, 'Id', [$object->id]) : null;
 
 		if (method_exists($object, 'tearDown')) $object->tearDown();
 
-		if ($listeners !== []) {
-			$listenerUserId = $this->resolveUserId($userId);
-			$this->transaction(function () use ($class, $object, $oldObject, $listeners, $listenerUserId) {
-				$this->persistor->insertUpdate($object);
-				$newObject = $this->simpleGetBy($class, 'Id', [$object->id]);
-				if ($newObject === null) return;
-				foreach ($listeners as $listener) {
-					$listener->afterSave($oldObject, $newObject, $listenerUserId);
-				}
-			});
+		if ($listeners === []) {
+			$this->persistor->insertUpdate($object);
 			return;
 		}
 
-		$this->persistor->insertUpdate($object);
-		if (!$legacyHistory) return;
-
-		if ($this instanceof IHistoryProxy) {
-			if ($new) {
-				$namespacedClass = "Model\\Data\\$class";
-				$oldObject = new $namespacedClass();
-			}
+		$userId = $this->resolveUserId($userId);
+		$this->transaction(function () use ($class, $object, $oldObject, $listeners, $userId) {
+			$this->persistor->insertUpdate($object);
 			$newObject = $this->simpleGetBy($class, 'Id', [$object->id]);
 			if ($newObject === null) return;
-			$reflection = new \ReflectionClass($newObject);
-			foreach ($reflection->getProperties() as $property) {
-				if (AttributeReader::has($property, Attributes\Label::class) && AttributeReader::has($property, Attributes\HistoryDontMap::class)) {
-					$oldObject->{$property->name} = $object->{$property->name};
-				}
+			foreach ($listeners as $listener) {
+				$listener->afterSave($oldObject, $newObject, $userId);
 			}
-			if (Utils\HistoryComparer::hasChanges($oldObject, $newObject)) {
-				$history = new \Model\Data\History;
-				$historyBindingAttr = AttributeReader::get($reflection, Attributes\HistoryBinding::class);
-				if ($historyBindingAttr !== null) {
-					$objectKey = $historyBindingAttr->key;
-					$objectId = $object->$objectKey;
-				} else {
-					$objectKey = Nette\Utils\Strings::lower(Nette\Utils\Strings::substring($this->name, 0, 1)) . Nette\Utils\Strings::substring($this->name, 1) . 'Id';
-					$objectId = $object->id;
-				}
-				$history->$objectKey = $objectId;
-				$history->userId = $userId;
-				$history->created = date('Y-m-d H:i:s');
-				$changes = Utils\HistoryComparer::getChanges($oldObject, $newObject);
-				$nameAttr = AttributeReader::get($reflection, Attributes\Name::class);
-				if ($historyBindingAttr !== null && $nameAttr !== null) {
-					$changes = sprintf('<strong style="font-size:120%%;">%s</strong><br />%s', $nameAttr->value, $changes);
-				}
-				if ($callback !== null) $changes = $callback($changes);
-				$history->changes = $changes;
-				$this->facadeManager->historyFacade->insertUpdateHistory($history);
-			}
-		} elseif ($object instanceof IHistoryObject) {
-			if ($new) {
-				$namespacedClass = "Model\\Data\\$class";
-				$oldObject = new $namespacedClass();
-			}
-			$newObject = $this->simpleGetBy($class, 'Id', [$object->id]);
-			if ($newObject === null) return;
-			$reflection = new \ReflectionClass($newObject);
-			foreach ($reflection->getProperties() as $property) {
-				if (AttributeReader::has($property, Attributes\Label::class) && AttributeReader::has($property, Attributes\HistoryDontMap::class)) {
-					$oldObject->{$property->name} = $object->{$property->name};
-				}
-			}
-			if (Utils\HistoryComparer::hasChanges($oldObject, $newObject)) {
-				$history = new \Model\Data\History2;
-				$history->key = $object->key;
-				$history->class = (new \ReflectionClass($object))->getShortName();
-				$history->userId = $userId;
-				$history->created = date('Y-m-d H:i:s');
-				$changes = Utils\HistoryComparer::getChanges($oldObject, $newObject);
-				if ($callback !== null) $changes = $callback($changes);
-				$history->changes = $changes;
-				$this->facadeManager->history2Facade->insertUpdateHistory2($history);
-			}
-		}
+		});
 	}
 
 	public function cleanCacheByTag($tag): void

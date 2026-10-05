@@ -45,6 +45,21 @@ class FacadeManager extends BaseManager
 	/** @var \AcidORM\Interfaces\IEntityListener[] */
 	private array $entityListeners = [];
 
+	/** @var callable|null fn(): ?int – aktuální uživatel pro ukládání a mazání volané s userId 0 */
+	private $defaultUserIdProvider = null;
+
+	public function setDefaultUserIdProvider(?callable $provider): void
+	{
+		$this->defaultUserIdProvider = $provider;
+	}
+
+	public function getDefaultUserId(): ?int
+	{
+		if ($this->defaultUserIdProvider === null) return null;
+		$userId = ($this->defaultUserIdProvider)();
+		return $userId === null ? null : (int) $userId;
+	}
+
 	public function addEntityListener(\AcidORM\Interfaces\IEntityListener $listener): void
 	{
 		$this->entityListeners[] = $listener;

@@ -2,7 +2,6 @@
 
 namespace AcidORM\Utils;
 
-use AcidORM\Interfaces\IHistoryProxy;
 use AcidORM\Attributes;
 
 class HistoryComparer

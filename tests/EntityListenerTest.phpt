@@ -69,3 +69,12 @@ Assert::same(["delete", "bez uživatele", null, null], end($listener->events));
 $facade->deleteTag($tag->id, 8);
 Assert::same(['delete', 'druhá', null, 8], end($listener->events));
 Assert::same(0, (int) $db->fetchSingle('SELECT COUNT(*) FROM [Tag]'));
+
+// userId 0 = aktuální uživatel z provideru, null zůstává null (systém)
+$engine->setDefaultUserIdProvider(fn() => 42);
+$t3 = new Tag; $t3->name = 'provider';
+$facade->insertUpdateTag($t3, 0);
+Assert::same(['save', null, 'provider', 42], end($listener->events));
+$t3->name = 'systém';
+$facade->insertUpdateTag($t3);
+Assert::same(['save', 'provider', 'systém', null], end($listener->events));

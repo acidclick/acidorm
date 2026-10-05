@@ -321,7 +321,18 @@ $facade->deleteArticle($id, $userId); // userId is optional
 
 For supported entities the facade loads the state before and after the save, and the save together
 with all listener calls runs in one database transaction (an exception in a listener rolls the save back).
-The built-in `IHistoryProxy` / `IHistoryObject` history is skipped for entities handled by a listener.
+`insertUpdate*($object, 0)` / `delete*($id, 0)` pass the current user from a provider you register:
+
+```php
+$engine->setDefaultUserIdProvider(fn() => $user->isLoggedIn() ? $user->getId() : null);
+```
+
+### Migration from 2.0 / 2.1
+
+v2.2 removes the built-in history (`IHistoryProxy`, `IHistoryObject`, trait `HistoryObject`, `#[HistoryBinding]`)
+that wrote into the application's `History` / `History2` tables. Record history in an `IEntityListener` instead
+(`HistoryComparer`, `#[Label]`, `#[EnumAttr]`, `#[Formatter]` and `#[HistoryDontMap]` stay available for that).
+The fallback to `\Model\Utils\Helpers::$userId` is replaced by `setDefaultUserIdProvider()`.
 
 ## HistoryComparer
 
@@ -432,7 +443,6 @@ public ?string $internalNote = null;
 |---|---|
 | `#[Name('text')]` | Display name used in history / audit trails |
 | `#[Plural('text')]` | Plural form used by facade dynamic methods |
-| `#[HistoryBinding(key: 'key')]` | History log binding key |
 
 ## Migration from docblock annotations
 
