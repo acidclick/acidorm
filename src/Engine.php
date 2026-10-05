@@ -132,6 +132,12 @@ class Engine
     	throw new \Exception;
     }
 
+    /** Zaregistruje posluchače ukládání a mazání entit (volat po startup()). */
+    public function addEntityListener(Interfaces\IEntityListener $listener): void
+    {
+    	$this->facadeManager->addEntityListener($listener);
+    }
+
     public function getFacadeManager()
     {
     	return $this->facadeManager;

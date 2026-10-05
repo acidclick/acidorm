@@ -129,7 +129,7 @@ class BaseFacade
 		}
 
 		if (preg_match('/^delete([A-Z]{1}.+)$/', $name, $regs)) {
-			$result = $this->simpleDelete($regs[1], $args[0]);
+			$result = $this->simpleDelete($regs[1], $args[0], $args[1] ?? null);
 			return $result;
 		}
 
@@ -226,10 +226,32 @@ class BaseFacade
 		return $objects;
 	}
 
-	private function simpleDelete($class, $id): void
+	private function simpleDelete($class, $id, $userId = null): void
 	{
 		$this->isCallable($class);
-		$this->persistor->delete($id);
+
+		$prototype = (new \ReflectionClass("Model\\Data\\$class"))->newInstanceWithoutConstructor();
+		$listeners = $this->facadeManager !== null ? $this->facadeManager->getEntityListeners($prototype) : [];
+		if ($listeners === []) {
+			$this->persistor->delete($id);
+			return;
+		}
+
+		$userId = $this->resolveUserId($userId);
+		$this->persistorManager->getDb()->transaction(function () use ($class, $id, $userId, $listeners) {
+			$oldObject = $this->simpleGetBy($class, 'Id', [$id]);
+			$this->persistor->delete($id);
+			if ($oldObject === null) return;
+			foreach ($listeners as $listener) {
+				$listener->afterDelete($oldObject, $userId);
+			}
+		});
+	}
+
+	private function resolveUserId($userId): ?int
+	{
+		if ((int)$userId === 0 && preg_match('/^[\d]+$/', (string) $userId) && class_exists(\Model\Utils\Helpers::class)) $userId = \Model\Utils\Helpers::$userId;
+		return $userId === null || $userId === '' ? null : (int) $userId;
 	}
 
 	private function simpleInsertUpdate($class, $object, $userId = null, $callback = null): void
@@ -238,7 +260,11 @@ class BaseFacade
 
 		if ((int)$userId === 0 && preg_match('/^[\d]+$/', (string) $userId)) $userId = \Model\Utils\Helpers::$userId;
 		$new = $object->id === null;
-		if (!$new && ($this instanceof IHistoryProxy || $object instanceof IHistoryObject)) {
+		$listeners = $this->facadeManager !== null ? $this->facadeManager->getEntityListeners($object) : [];
+		// vestavěná historie (History/History2) jen pokud entitu neobsluhuje žádný posluchač
+		$legacyHistory = $listeners === [] && ($this instanceof IHistoryProxy || $object instanceof IHistoryObject);
+		$oldObject = null;
+		if (!$new && ($listeners !== [] || $legacyHistory)) {
 			$oldObject = $this->simpleGetBy($class, 'Id', [$object->id]);
 		}
 		if ($object instanceof IHistoryObject && empty($object->key)) {
@@ -251,7 +277,22 @@ class BaseFacade
 		}
 
 		if (method_exists($object, 'tearDown')) $object->tearDown();
+
+		if ($listeners !== []) {
+			$listenerUserId = $this->resolveUserId($userId);
+			$this->persistorManager->getDb()->transaction(function () use ($class, $object, $oldObject, $listeners, $listenerUserId) {
+				$this->persistor->insertUpdate($object);
+				$newObject = $this->simpleGetBy($class, 'Id', [$object->id]);
+				if ($newObject === null) return;
+				foreach ($listeners as $listener) {
+					$listener->afterSave($oldObject, $newObject, $listenerUserId);
+				}
+			});
+			return;
+		}
+
 		$this->persistor->insertUpdate($object);
+		if (!$legacyHistory) return;
 
 		if ($this instanceof IHistoryProxy) {
 			if ($new) {

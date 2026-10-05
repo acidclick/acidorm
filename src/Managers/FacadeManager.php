@@ -42,6 +42,22 @@ class FacadeManager extends BaseManager
 		return $this->data[$className];
 	}
 
+	/** @var \AcidORM\Interfaces\IEntityListener[] */
+	private array $entityListeners = [];
+
+	public function addEntityListener(\AcidORM\Interfaces\IEntityListener $listener): void
+	{
+		$this->entityListeners[] = $listener;
+	}
+
+	/**
+	 * @return \AcidORM\Interfaces\IEntityListener[] posluchači, kteří podporují danou entitu
+	 */
+	public function getEntityListeners(\AcidORM\BaseObject $object): array
+	{
+		return array_values(array_filter($this->entityListeners, fn($listener) => $listener->supports($object)));
+	}
+
 	public function getDb()
 	{
 		return $this->persistorManager->getDb();

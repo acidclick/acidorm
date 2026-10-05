@@ -300,6 +300,29 @@ $article = $persistor->getById(1, true, $deps);
 $facade->mapDependencies($article, false, ['comments']);
 ```
 
+## Entity listeners (v2.1)
+
+Register an `AcidORM\Interfaces\IEntityListener` to react to saves and deletes made through facades
+(`insertUpdate*`, `delete*`) – e.g. to record change history or an audit log in your application.
+
+```php
+class HistoryRecorder implements AcidORM\Interfaces\IEntityListener
+{
+    public function supports(AcidORM\BaseObject $object): bool { /* e.g. check an attribute */ }
+    public function afterSave(?AcidORM\BaseObject $old, AcidORM\BaseObject $new, ?int $userId): void { /* $old is null for new entities */ }
+    public function afterDelete(AcidORM\BaseObject $old, ?int $userId): void {}
+}
+
+$engine->startup();
+$engine->addEntityListener(new HistoryRecorder);
+
+$facade->deleteArticle($id, $userId); // userId is optional
+```
+
+For supported entities the facade loads the state before and after the save, and the save together
+with all listener calls runs in one database transaction (an exception in a listener rolls the save back).
+The built-in `IHistoryProxy` / `IHistoryObject` history is skipped for entities handled by a listener.
+
 ## HistoryComparer
 
 `AcidORM\Utils\HistoryComparer` compares two versions of an entity and produces a human-readable change summary. Only properties with `#[Label]` are compared.
