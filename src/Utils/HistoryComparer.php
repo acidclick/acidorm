@@ -68,11 +68,11 @@ class HistoryComparer
 		}
 		$enumAttr = AttributeReader::get($property, Attributes\EnumAttr::class);
 		if ($enumAttr !== null) {
-			return call_user_func($enumAttr->className . '::getName', $value);
+			return (string) call_user_func($enumAttr->className . '::getName', $value);
 		}
 		$formatterAttr = AttributeReader::get($property, Attributes\Formatter::class);
 		if ($formatterAttr !== null) {
-			return call_user_func($formatterAttr->className . '::format', $value, $property);
+			return (string) call_user_func($formatterAttr->className . '::format', $value, $property);
 		}
 		return (string) $value;
 	}

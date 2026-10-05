@@ -236,7 +236,7 @@ class BaseFacade
 	{
 		$this->isCallable($class);
 
-		if ((int)$userId === 0 && preg_match('/^[\d]+$/', $userId)) $userId = \Model\Utils\Helpers::$userId;
+		if ((int)$userId === 0 && preg_match('/^[\d]+$/', (string) $userId)) $userId = \Model\Utils\Helpers::$userId;
 		$new = $object->id === null;
 		if (!$new && ($this instanceof IHistoryProxy || $object instanceof IHistoryObject)) {
 			$oldObject = $this->simpleGetBy($class, 'Id', [$object->id]);

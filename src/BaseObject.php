@@ -21,7 +21,7 @@ class BaseObject implements \JsonSerializable
 	public function getLabel(?string $name = null): string
 	{
 		if (property_exists($this, 'label')) {
-			return $this->label;
+			return (string) $this->label;
 		}
 
 		if ($name !== null && property_exists($this, $name)) {
