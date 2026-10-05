@@ -238,7 +238,7 @@ class BaseFacade
 		}
 
 		$userId = $this->resolveUserId($userId);
-		$this->persistorManager->getDb()->transaction(function () use ($class, $id, $userId, $listeners) {
+		$this->transaction(function () use ($class, $id, $userId, $listeners) {
 			$oldObject = $this->simpleGetBy($class, 'Id', [$id]);
 			$this->persistor->delete($id);
 			if ($oldObject === null) return;
@@ -246,6 +246,21 @@ class BaseFacade
 				$listener->afterDelete($oldObject, $userId);
 			}
 		});
+	}
+
+	/**
+	 * Spustí callback v transakci. Pokud už transakce běží (otevřená mimo dibi::transaction(),
+	 * např. přes begin()), nová se neotevírá – řídí ji ten, kdo ji začal.
+	 */
+	private function transaction(callable $callback): void
+	{
+		$db = $this->persistorManager->getDb();
+		$driver = $db->getDriver();
+		if (method_exists($driver, 'inTransaction') && $driver->inTransaction()) {
+			$callback();
+			return;
+		}
+		$db->transaction($callback);
 	}
 
 	private function resolveUserId($userId): ?int
@@ -268,19 +283,19 @@ class BaseFacade
 			$oldObject = $this->simpleGetBy($class, 'Id', [$object->id]);
 		}
 		if ($object instanceof IHistoryObject && empty($object->key)) {
+			// jedinečnost klíče v tabulce entity (dříve se kontrolovala tabulka History2)
+			$table = $this->persistor->getTable();
 			do {
-				$unique = false;
-				$object->key = HistoryObject::generateUniqueId();
-				$q = $this->persistorManager->getDb()->select('id')->from('%n', HistoryObject::getTableName())->where('[key] = %s', $object->key)->limit(1);
-				foreach ($q as $r) { $unique = true; }
-			} while ($unique);
+				$object->key = method_exists($object, 'generateUniqueId') ? $object::generateUniqueId() : uniqid();
+				$exists = $this->persistorManager->getDb()->select('id')->from('%n', $table)->where('[key] = %s', $object->key)->fetch() !== null;
+			} while ($exists);
 		}
 
 		if (method_exists($object, 'tearDown')) $object->tearDown();
 
 		if ($listeners !== []) {
 			$listenerUserId = $this->resolveUserId($userId);
-			$this->persistorManager->getDb()->transaction(function () use ($class, $object, $oldObject, $listeners, $listenerUserId) {
+			$this->transaction(function () use ($class, $object, $oldObject, $listeners, $listenerUserId) {
 				$this->persistor->insertUpdate($object);
 				$newObject = $this->simpleGetBy($class, 'Id', [$object->id]);
 				if ($newObject === null) return;
